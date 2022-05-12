@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout ,QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QToolBar)
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+                             QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QToolBar, QComboBox)
 from PyQt5.QtCore import QSize, Qt, QDate, QTime
 from PyQt5.QtGui import QFont, QColor, QIcon
 
@@ -25,6 +25,8 @@ class FileApp(QMainWindow):
         self.resize(self.full_size) # resize the window to the size of desktop
         # set up the dock area
         self.setUpDock()
+        # set up the tool  bar
+        self.setUpToolBar()
         # set up the central widget
         self.setUpCentral()
 
@@ -40,13 +42,43 @@ class FileApp(QMainWindow):
         self.dock.setFloating(False)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
 
+    def setUpToolBar(self):
+
         # create the tool bar
         self.tool_bar = QToolBar("Tool Bar")
-        self.tool_bar.setMinimumHeight(int(self.full_size.height() * 0.10))
+        self.tool_bar.setIconSize(QSize(50, 50))
+        self.tool_bar.setMinimumHeight(int(self.full_size.height() * 0.13))
+        self.tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.addToolBar(Qt.TopToolBarArea, self.tool_bar)
 
-        self.tool_bar.addAction(QIcon("img/sys/new_folder.png") , "New Folder",
-                                lambda  : self.tab_bar.currentWidget().newFolder())
+
+        self.tool_bar.addAction(QIcon("img/sys/home.png"), "Home",
+                                lambda : self.tab_bar.currentWidget().home())
+
+        self.tool_bar.addAction(QIcon("img/sys/back.png"), "",
+                                lambda: self.tab_bar.currentWidget().goBackward())
+
+        self.tool_bar.addAction(QIcon("img/sys/right-arrow.png"), "",
+                                lambda: print("forward"))
+
+        self.tool_bar.addSeparator()
+
+        self.tool_bar.addAction(QIcon("img/sys/open-folder.png"), "Open",
+                                lambda : print("open"))
+
+        self.tool_bar.addAction(QIcon("img/sys/add-folder.png"), "New Folder",
+                                lambda: self.tab_bar.currentWidget().newFolder())
+
+
+
+        self.tool_bar.addSeparator()
+        # add the view changed combo box
+        self.viewChangedBox = QComboBox()
+        self.viewChangedBox.addItem(QIcon("img/sys/list.png"), "List View",0)
+        self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View",1)
+        self.viewChangedBox.currentIndexChanged.connect(self.changeFolderView)
+        # add to the tool bar
+        self.tool_bar.addWidget(self.viewChangedBox)
 
 
 
@@ -55,13 +87,43 @@ class FileApp(QMainWindow):
         # create the tab bar widget
         self.tab_bar = QTabWidget()
         self.tab_bar.setTabsClosable(True)
+        self.tab_bar.setTabShape(QTabWidget.Rounded)
         self.setCentralWidget(self.tab_bar)
+
+        # set the tab closed request slots for close the tab
+        self.tab_bar.tabCloseRequested.connect(self.closeTab)
+        # set the add tab bar button
+        newTabButton = self.tab_bar.tabBar().addTab("+")
+        self.tab_bar.tabBar().setTabButton(newTabButton, QTabBar.RightSide, None)
+        self.tab_bar.tabBar().tabBarClicked.connect(self.addNewFileTab)
+
 
 
         # create the main tab widget
         self.current_file_area = FileArea(self.db_manager)
         self.tab_bar.addTab(self.current_file_area , "Home")
+        self.tab_bar.setCurrentIndex(0)
 
+    def addNewFileTab(self, event):
+
+        if event == self.tab_bar.tabBar().count() - 1:
+            self.current_file_area = FileArea(self.db_manager)
+            self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home")
+
+            self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
+
+    def closeTab(self, event):
+
+        if self.tab_bar.tabBar().count() == 2:
+            QApplication.quit()
+
+        widget = self.tab_bar.widget(event)
+        self.tab_bar.tabBar().removeTab(event)
+
+    def changeFolderView(self, index : int):
+
+        for i in range(self.tab_bar.tabBar().count() - 1):
+            self.tab_bar.widget(i).changeFolderMode(index)
 
 
 if __name__ == "__main__":

@@ -52,9 +52,10 @@ class db_manager:
             print("[INFO] database create successfull.")
 
     def add_folder(self, name : str , parent_path : str):
-
+        print(parent_path)
+        print(self.get_paths(parent_path))
         folder_path = path_manager.get_path_for_folder(parent_path, self.get_paths(parent_path))
-
+        print(folder_path)
         now = datetime.datetime.now()
         with db_injector(self.path) as cursor:
             cursor.execute("INSERT INTO folders(name, path, time, fav) VALUES(?, ?, ?, ?)", (name, folder_path,
@@ -82,14 +83,35 @@ class db_manager:
             cursor.execute("SELECT path FROM folders WHERE path LIKE ? ORDER BY path", (f"{parent_path}_%",))
             paths = [x[0] for  x in cursor.fetchall()]
 
-        return paths
+        # filter paths
+        paths_ = []
+        for item in paths:
+            if parent_path == ".":
+                if len(item.split(".")) == 2:
+                    paths_.append(item)
+            else:
+                if len(parent_path.split(".")) + 1 == len(item.split(".")):
+                    paths_.append(item)
+
+        return paths_
 
     def open_folder(self, path : str):
 
         with db_injector(self.path, False) as cursor:
             cursor.execute(f"SELECT name, path, time, fav FROM folders WHERE path LIKE ? ORDER BY time " ,
                            (f"{path}_%", ))
-            return cursor.fetchall()
+            paths = cursor.fetchall()
+
+            paths_ = []
+            for item in paths:
+                if path == ".":
+                    if len(item[1].split(".")) == 2:
+                        paths_.append(item)
+                else:
+                    if len(path.split(".")) + 1 == len(item[1].split(".")):
+                        paths_.append(item)
+
+            return paths_
 
         return []
 

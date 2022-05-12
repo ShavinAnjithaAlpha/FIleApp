@@ -10,7 +10,7 @@ class FileArea(QScrollArea):
     def __init__(self, db_manager : db_manager):
         super(FileArea, self).__init__()
         # declare the attributes
-        self.file_engine = FileEngine(db_manager)
+        self.file_engine = FileEngine(db_manager, self)
         self.folders = []
         self.files = []
 
@@ -35,12 +35,16 @@ class FileArea(QScrollArea):
         # open the current folder
         self.openFolder(self.file_engine.current_path)
 
-    def openFolder(self, path):
+    def openFolder(self, path , back = False):
 
-        folder_widgets = self.file_engine.open_folder(path)
+        # first clean the file area
+        self.cleanArea()
+
+        folder_widgets = self.file_engine.open_folder(path, back = back)
         for i, widget in enumerate(folder_widgets):
             self.grid.addWidget(widget, i, 0)
             self.folders.append(widget)
+
 
     def newFolder(self):
 
@@ -59,8 +63,31 @@ class FileArea(QScrollArea):
         for widget in self.files:
             widget.deleteLater()
 
+        self.folders = []
+        self.files = []
+
     def removeWidgetsFromGrid(self):
 
         for widget in [*self.folders , *self.files]:
             self.grid.removeWidget(widget)
+
+    def goBackward(self):
+        # print(self.file_engine.path_stack)
+        if self.file_engine.count() > 1:
+            index = self.file_engine.backward() - 1
+            # open the last position
+            self.openFolder(self.file_engine.path(index), back = True)
+
+    def changeFolderMode(self, index):
+
+        if index == 0:
+            print("list")
+        elif index == 1:
+            print("grid")
+        else:
+            print("None")
+
+    def home(self):
+
+        self.openFolder(".")
 

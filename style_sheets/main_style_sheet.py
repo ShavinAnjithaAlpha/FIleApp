@@ -2,7 +2,7 @@
 style_sheet = """
             
             QWidget {
-                background-color : rgb(35, 35, 35);
+                background-color : rgb(25, 25, 25);
                 padding : 10px;
                 color : rgb(220, 220, 220);
                 font-family : Helvetica;
@@ -10,7 +10,7 @@ style_sheet = """
                 font-weight : 300}
                 
             QPushButton {
-                    background-color : rgb(250, 50, 0);
+                    background-color : rgb(220, 70, 10);
                     color : black;
                     font-size : 25px;
                     padding : 7px 8px;
@@ -18,7 +18,7 @@ style_sheet = """
                     border-radius : 5px;}
                     
             QPushButton:hover {
-                    background-color : rgb(240, 70, 0);
+                    background-color : rgb(250, 50, 0);
                     border-radius : 7px;}
                     
             QLabel {
@@ -28,12 +28,20 @@ style_sheet = """
                 margin : 10px;}
                 
             QDockWidget {
-                border : 5px;
-                titlebar-close-icon : url(img/sys/close.png);
+                border : 5px solid orange;
+                titlebar-close-icon : url(img/sys/clear.png);
                 titlebar-normal-icon : url(img/sys/uncchecked_box.png);}    
+            
+            QDockWidget QWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgb(215, 15, 15), stop : 1.0 rgb(0, 0, 0));}
+                
+            QDockWidget::title {
+                    background-color : rgb(10, 10, 10);
+                    border-top-right-radius : 10px;
+                    border-top-left-radius : 10px;
+                    padding : 10px;}
                 
             QScrollArea {
-                    background-color : rgb(35, 35, 35);
+                    background-color : rgb(25, 25, 25);
                     border : none;
                     margin : 0px;}
                     
@@ -50,8 +58,9 @@ style_sheet = """
                                     
             QTabWidget::pane {border : none;}
             
-            QTabBar::tab:close-button {
-                        icon : url(img/sys/close.png);}
+            QTabBar::close-button {
+                        image : url(img/sys/remove.png);
+                        sub-control-position : left}
             
             QScrollBar:vertical, QScrollBar:horizontal {background-color : rgb(20, 20 ,20);
                                                 max-width : 10px;
@@ -84,5 +93,80 @@ style_sheet = """
             QScrollBar::right-arrow:horizontal , QScrollBar::left-arrow:horizontal
                                                 {background : none;
                                                 border : none}
+                                                
+            QToolBar {
+                    background-color : rgb(15, 15, 15);
+                    padding : 15px;
+                    margin-bottom : 10px;}
+                    
+            QToolBar QToolButton {
+                    background : none;
+                    margin : 5px;
+                    padding : 20px;
+                    border-radius : 12px;
+                    font-size : 18px;}
+                    
+            QToolBar QToolButton:hover {
+                    background-color: rgb(40, 40, 40);}
+            
+            QMenu {
+                border-radius : 20px;
+                padding : 10px;
+            }
+            
+            QMenu::panel {border-radius : 15px;}
+               
+            QMenu::item {
+                    border-radius : 2px;
+                    margin : 0px;
+                    padding : 10px;
+                    min-width : 250px;
+                    font-size : 20px;}
+                    
+            QMenu QIcon {margin : 10px;}
+                    
+            QMenu::item::selected {
+                    background-color : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0.0 rgb(40, 40, 40), stop : 1.0 rgb(60, 60, 60) );
+                    color : white;
+                    border-bottom : 1px solid rgb(100, 100, 100);
+                    padding : 10px;
+             }
+             
+             QComboBox {font-size : 18px;
+                        background-color : rgb(40, 40, 40);
+                        padding : 12px;
+                        border-radius : 5px}
+             
+             QComboBox:item {padding : 15px;}
+             
+             QComboBox::drop-down {border-radius :12px;
+                                    padding : 8px;
+                                    subcontrol-origin: padding;
+                                    subcontrol-position: top right;}
+             
+             QComboBox QAbstractItemView::item {
+                                selection-background-color: rgb(50, 50, 50);
+                                padding : 15px;
+                                background-color : rgba(60, 60,60, 0.5)}
+                        
+            
+            QLineEdit {padding : 10px 15px;
+                        background-color : rgb(60, 60, 60);
+                        border-radius : 8px;
+                        font-size : 20px;
+                        color  : white}
+                        
+            QLineEdit:focus {border-bottom : 3px solid rgb(240, 50 , 5)}            
+                    
+            QInputDialog QPushButton {
+                            width : 130px;
+                            padding : 7px;
+                            font-size : 18px;}
+                            
+            QSeparator {background-color : white;
+                        border-color : white;
+                        width : 3px;}
+                            
+             
         
             """
