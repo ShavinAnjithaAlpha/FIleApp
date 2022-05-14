@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
     QGridLayout
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 import datetime
 
@@ -19,11 +19,11 @@ class FolderWidget(Folder, QWidget):
         self.name_label.setObjectName("name-label")
 
         self.icon_label = QLabel()
-        self.icon_label.setFixedSize(QSize(150, 120))
+        self.icon_label.setFixedSize(QSize(130, 100))
         icon = QPixmap("img/sys/folder (1).png").scaled(self.icon_label.size() , Qt.KeepAspectRatio, Qt.FastTransformation)
         self.icon_label.setPixmap(icon)
 
-        self.time_label = QLabel(self.time)
+        self.time_label = QLabel(self.formatTime(f"{self.time}"))
         self.time_label.setObjectName("time-label")
 
         self.favorite_button = QPushButton()
@@ -31,20 +31,49 @@ class FolderWidget(Folder, QWidget):
         self.favorite_button.setIcon(QIcon("img/sys/star.png"))
 
         # create the grid
-        grid = QGridLayout()
-        grid.addWidget(self.favorite_button, 0, 2)
-        grid.addWidget(self.icon_label, 1, 0, 2, 1)
-        grid.addWidget(self.name_label, 1, 1)
-        grid.addWidget(self.time_label, 2, 2)
+        self.grid = QGridLayout()
+        self.grid.setVerticalSpacing(0)
+        # self.changeView(0)
 
         # create the base widget
-        baseWidget = QWidget()
-        baseWidget.setObjectName("folder-base")
-        baseWidget.setLayout(grid)
+        self.baseWidget = QWidget()
+        self.baseWidget.setContentsMargins(0, 0, 0, 0)
+        self.baseWidget.setObjectName("folder-base")
+        self.baseWidget.setLayout(self.grid)
 
-        self.setLayout(QHBoxLayout())
-        self.layout().addWidget(baseWidget)
+        self.setContentsMargins(0, 0, 0, 0)
+        hbox = QHBoxLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(hbox)
+        self.layout().addWidget(self.baseWidget)
         self.setStyleSheet(style_sheet)
+
+    def changeView(self, index):
+
+        # first remove the widget from grid
+        for w in [self.name_label, self.time_label, self.icon_label, self.favorite_button]:
+            self.grid.removeWidget(w)
+
+        if index == 0:
+            self.name_label.setWordWrap(False)
+            self.grid.addWidget(self.favorite_button, 0, 2)
+            self.grid.addWidget(self.icon_label, 0, 0, 3, 1)
+            self.grid.addWidget(self.name_label, 1, 1)
+            self.grid.addWidget(self.time_label, 2, 2)
+
+            # adjust the size of the widget
+            self.setFixedHeight(230)
+            self.setMaximumWidth(2000)
+
+        elif index == 1:
+            self.name_label.setWordWrap(True)
+            self.grid.addWidget(self.favorite_button, 0, 0)
+            self.grid.addWidget(self.icon_label, 1, 0, 1, 1)
+            self.grid.addWidget(self.name_label, 2, 0, 1, 1)
+            # adjust th size of the  widget
+            self.setFixedSize(QSize(250, 240))
+        else:
+            pass
 
     def contextMenuEvent(self, event : QContextMenuEvent) -> None:
 
@@ -72,11 +101,36 @@ class FolderWidget(Folder, QWidget):
 
         folderMenu.exec_(self.mapToGlobal(event.pos()))
 
+    def mousePressEvent(self, event : QMouseEvent) -> None:
+
+        self.parent.selected(self)
+        event.accept()
+
+
     def mouseDoubleClickEvent(self,event : QMouseEvent) -> None:
 
         self.parent.openFolder(self.path)
         # stop propagate the signal
         event.accept()
+
+    def selected(self):
+
+        self.baseWidget.setObjectName("selected-folder-base")
+        self.setStyleSheet(style_sheet)
+
+    def unselected(self):
+
+        self.baseWidget.setObjectName("folder-base")
+        self.setStyleSheet(style_sheet)
+
+    def formatTime(self, text : str):
+
+        date, time = text.split(" ")
+        time_ , date_ = QTime.fromString(time.split(".")[0], "hh:mm:ss") , QDate.fromString(date, "yyyy-MM-dd")
+
+        formatted_date, formatted_time = date_.toString("yyyy MMM dd"), time_.toString("hh:mm A")
+
+        return f"created on {formatted_date} {formatted_time}"
 
 if __name__ == "__main__":
     app = QApplication([])

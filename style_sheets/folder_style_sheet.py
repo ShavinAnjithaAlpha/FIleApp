@@ -2,25 +2,33 @@
 style_sheet = """
             
             QWidget#folder-base {
-                    background-color : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgba(0, 0, 10, 0.5), stop : 1.0 rgba(0, 0, 50, 0.5));
+                    background : none;
                     color : white;
                     font-weight : 400;
-                   border-bottom : 1px solid gray;
+                   border-bottom : 1px solid rgba(60, 60, 60, 0.7);
                     border-radius : 5px;}
                     
-            QWidget#folder-base:hover {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgb(5, 5, 45), stop : 1.0 rgb(10, 10, 70))}
+            QWidget#selected-folder-base {
+                background-color : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgba(15, 0, 40, 0.5), stop : 1.0 rgba(50, 0, 100, 0.5));
+                color : white;
+                border-radius : 5px;}
+                    
+            QWidget#folder-base:hover {border : 1px solid rgb(80, 80, 80);
+                                        border-right : 1px solid rgb(80, 80, 80);}
+                    
+            QWidget#selected-folder-base:hover {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgb(20, 5, 45), stop : 1.0 rgb(40, 10, 70))}
                     
             QLabel {
                 background : none;
                 font-weight : 400;}
                 
-            QLabel#name-label {font-size : 30px;
+            QLabel#name-label {font-size : 25px;
                             font-family : Helvetica;
                             font-weight : normal;}
                             
-            QLabel#time-label {color : rgb(200, 200, 200);
-                                font-size : 18px;
-                                font-style : italy;
+            QLabel#time-label {color : rgb(150, 150, 150);
+                                font-size : 20px;
+                                font-style : italic;
                                 }
                                 
             QPushButton#fav-button {background : none;

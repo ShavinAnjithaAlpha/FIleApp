@@ -12,7 +12,10 @@ from style_sheets.main_style_sheet import style_sheet
 class FileApp(QMainWindow):
     def __init__(self):
         super(FileApp, self).__init__()
+        # view mode index
+        self.view_mode_index = 0
         self.initializeUI()
+
 
     def initializeUI(self):
 
@@ -26,7 +29,7 @@ class FileApp(QMainWindow):
         # set up the dock area
         self.setUpDock()
         # set up the tool  bar
-        self.setUpToolBar()
+        # self.setUpToolBar()
         # set up the central widget
         self.setUpCentral()
 
@@ -122,8 +125,12 @@ class FileApp(QMainWindow):
 
     def changeFolderView(self, index : int):
 
+        self.view_mode_index = index
         for i in range(self.tab_bar.tabBar().count() - 1):
             self.tab_bar.widget(i).changeFolderMode(index)
+
+    def viewModeIndex(self):
+        return self.view_mode_index
 
 
 if __name__ == "__main__":

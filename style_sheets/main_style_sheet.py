@@ -62,35 +62,32 @@ style_sheet = """
                         image : url(img/sys/remove.png);
                         sub-control-position : left}
             
-            QScrollBar:vertical, QScrollBar:horizontal {background-color : rgb(20, 20 ,20);
+            QScrollBar:vertical {background-color : rgb(20, 20 ,20);
                                                 max-width : 10px;
-                                                border-radius : 5px}
+                                                border-radius : 4px}
             QScrollBar::handle:vertical {background-color : rgb(50, 50 ,50);
                                                 border-radius : 5px;
                                                 margin-top : 0px;
                                                 margin-bottom : 0px}
-                                                
+
+            QScrollBar:horizontal {background-color : rgb(20, 20 ,20);
+                                                max-width : 10px;
+                                                border-radius : 4px}
             QScrollBar::handle:horizontal {background-color : rgb(50, 50 ,50);
                                                 border-radius : 5px;
                                                 margin-left : 0px;
-                                                margin-right : 0px}
-                                                
-            QScrollBar::handle:vertical:hover {background-color : rgb(0, 120, 240)}
-                
-            QScrollBar::handle:horizontal:hover {background-color  :rgb(0, 120, 240)}
-                
+                                                margin-right : 0px}                           
+
+            QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover  
+                                                        {background-color : rgb(0, 120, 240);
+                                                        width : 16px}
+            QScrollBar:vertical:hover, QScrollBar:horizontal:hover {min-width : 16px}
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical,
             QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal 
                                                         {background : none;
                                                         border : none}
-                                                        
-            QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {background : none;
-                                                        border : none}
-                
-            QScrollBar::up-arrow:vertical , QScrollBar::down-arrow:vertical
-                                                {background : none;
-                                                border : none}
-                                                
-            QScrollBar::right-arrow:horizontal , QScrollBar::left-arrow:horizontal
+            QScrollBar::up-arrow:vertical , QScrollBar::down-arrow:vertical,
+            QScrollBar::left-arrow:horizontal , QScrollBar::right-arrow:horizontal
                                                 {background : none;
                                                 border : none}
                                                 
@@ -132,31 +129,36 @@ style_sheet = """
                     padding : 10px;
              }
              
-             QComboBox {font-size : 18px;
+            QComboBox {font-size : 18px;
                         background-color : rgb(40, 40, 40);
                         padding : 12px;
                         border-radius : 5px}
              
-             QComboBox:item {padding : 15px;}
+            QComboBox:item {padding : 15px;}
              
-             QComboBox::drop-down {border-radius :12px;
+            QComboBox::drop-down {border-radius :12px;
                                     padding : 8px;
                                     subcontrol-origin: padding;
                                     subcontrol-position: top right;}
+                                    
+            QComboBox QAbstractItemView {background-color  : rgb(70, 70, 70);
+                                        padding : 10px;
+                                        item-spacing : 10px;
+                                        border-bottom-left-radius : 7px;
+                                        border-bottom-right-radius : 7px;}
              
-             QComboBox QAbstractItemView::item {
-                                selection-background-color: rgb(50, 50, 50);
-                                padding : 15px;
-                                background-color : rgba(60, 60,60, 0.5)}
-                        
+           
             
             QLineEdit {padding : 10px 15px;
                         background-color : rgb(60, 60, 60);
                         border-radius : 8px;
-                        font-size : 20px;
+                        border : 0.5px solid rgb(220, 50, 10);
+                        font-size : 22px;
                         color  : white}
                         
-            QLineEdit:focus {border-bottom : 3px solid rgb(240, 50 , 5)}            
+            QLineEdit:focus {border-radius : 8px;
+                    border : none;
+                    border-left : 3px solid rgb(240, 50 , 5)}            
                     
             QInputDialog QPushButton {
                             width : 130px;
@@ -166,6 +168,21 @@ style_sheet = """
             QSeparator {background-color : white;
                         border-color : white;
                         width : 3px;}
+                        
+            
+            QPushButton#action-button {background : none;
+                                    margin : 10px;
+                                    padding : 7px;
+                                    color : white;
+                                    max-width : 150px;}
+                                    
+            QPushButton#action-button:hover {background-color : rgba(50, 50, 50, 0.5);
+                                            border-radius : 7px;}
+                                            
+            QToolBar#file-area-tool-bar {background : none;
+                                        border : 2px solid rgb(120, 120, 120);
+                                        border-left : 2px solid rgb(120, 120, 120);
+                                        border-radius : 7px;}
                             
              
         

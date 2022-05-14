@@ -52,10 +52,9 @@ class db_manager:
             print("[INFO] database create successfull.")
 
     def add_folder(self, name : str , parent_path : str):
-        print(parent_path)
-        print(self.get_paths(parent_path))
+
         folder_path = path_manager.get_path_for_folder(parent_path, self.get_paths(parent_path))
-        print(folder_path)
+
         now = datetime.datetime.now()
         with db_injector(self.path) as cursor:
             cursor.execute("INSERT INTO folders(name, path, time, fav) VALUES(?, ?, ?, ?)", (name, folder_path,
@@ -73,7 +72,10 @@ class db_manager:
         now = datetime.datetime.now()
         with db_injector(self.path) as cursor:
             for file in file_list:
-                cursor.execute(f"""INSERT INTO files(file , path, fav) VALUES (?, ?, ?, ?)""", (file, path, now, False))
+                cursor.execute(f"""INSERT INTO files(file , path, time ,fav) VALUES (?, ?, ?, ?)""", (file, path, now, False))
+
+        print(now)
+        return now
 
 
     def get_paths(self, parent_path : str):
@@ -119,7 +121,7 @@ class db_manager:
 
         with db_injector(self.path, False) as cursor:
             cursor.execute(
-                f"SELECT file, path, time, fav FROM files WHERE path LIKE '{path}' ORDER BY time ")
+                f"SELECT file, path, time, fav FROM files WHERE path = ? ORDER BY time ", (path, ))
             return cursor.fetchall()
 
         return []
