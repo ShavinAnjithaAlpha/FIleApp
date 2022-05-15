@@ -74,7 +74,6 @@ class db_manager:
             for file in file_list:
                 cursor.execute(f"""INSERT INTO files(file , path, time ,fav) VALUES (?, ?, ?, ?)""", (file, path, now, False))
 
-        print(now)
         return now
 
 
@@ -157,3 +156,44 @@ class db_manager:
             return cursor.fetchall()[0]
 
         return []
+
+    def rename_folder(self, path : str , new_name : str):
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("UPDATE folders SET name = ? WHERE path = ?", (new_name, path))
+
+    def change_favorite_folder(self, path : str, state : bool):
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("UPDATE folders SET fav = ? WHERE path = ? ", (state, path))
+
+    def change_favorite_file(self, path : str, file : str ,state : bool):
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("UPDATE files SET fav = ? WHERE path = ? AND file = ? ", (state, path, file))
+
+    def numberOfFolders(self, path : str):
+
+        with db_injector(self.path, False) as cursor:
+            cursor.execute(f"SELECT path FROM folders WHERE path LIKE ? ",
+                           (f"{path}_%",))
+            paths = cursor.fetchall()
+
+            paths_ = []
+            for item in paths:
+                if path == ".":
+                    if len(item.split(".")) == 2:
+                        paths_.append(item)
+                else:
+                    if len(path.split(".")) + 1 == len(item.split(".")):
+                        paths_.append(item)
+
+            return len(paths_)
+
+    def numberOfFiles(self, path : str):
+
+        with db_injector(self.path, False) as cursor:
+            cursor.execute(f"SELECT file FROM files WHERE path = ? ", (path, ))
+            return len(cursor.fetchall())
+
+        return 0

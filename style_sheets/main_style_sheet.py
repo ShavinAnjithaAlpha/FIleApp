@@ -5,7 +5,7 @@ style_sheet = """
                 background-color : rgb(25, 25, 25);
                 padding : 10px;
                 color : rgb(220, 220, 220);
-                font-family : Helvetica;
+                font-family : Calibri;
                 font-size : 22px;
                 font-weight : 300}
                 
@@ -24,7 +24,7 @@ style_sheet = """
             QLabel {
                 color : rgb(220, 220, 220);
                 font-size : 22px;
-                font-family : Helvetica;
+                font-family : Calibri;
                 margin : 10px;}
                 
             QDockWidget {
@@ -32,7 +32,8 @@ style_sheet = """
                 titlebar-close-icon : url(img/sys/clear.png);
                 titlebar-normal-icon : url(img/sys/uncchecked_box.png);}    
             
-            QDockWidget QWidget {background : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0 rgb(215, 15, 15), stop : 1.0 rgb(0, 0, 0));}
+            QDockWidget .QWidget {border-right : 1px solid rgb(100, 100, 100);
+                                border-radius :5px;}
                 
             QDockWidget::title {
                     background-color : rgb(10, 10, 10);
@@ -184,6 +185,10 @@ style_sheet = """
                                         border-left : 2px solid rgb(120, 120, 120);
                                         border-radius : 7px;}
                             
-             
+            QLineEdit#search-bar {background-color : QLinearGradient(x1 : 0, y1 : 0, x2  : 1, y2 : 0, stop : 0 rgb(40, 40, 40), stop : 1 rgb(60, 60,60));
+                                    padding : 10px;
+                                    font-size  : 25px;
+                                    border-radius : 18px;
+                                    border : none;}
         
             """

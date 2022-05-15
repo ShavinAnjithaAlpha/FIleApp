@@ -1,21 +1,27 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
                              QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QScrollArea,
-                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime
+                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit)
+from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QIcon, QCursor
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
 
 from widgets.folder_widget import FolderWidget
+from widgets.image_widget import ImageWidget
+
 
 class FileArea(QWidget):
-    def __init__(self, db_manager : db_manager):
-        super(FileArea, self).__init__(None)
+
+    folder_status_signal = pyqtSignal(list)
+    image_status_signal = pyqtSignal(list)
+
+    def __init__(self, db_manager : db_manager ,parent = None):
+        super(FileArea, self).__init__(parent)
         # declare the attributes
         self.file_engine = FileEngine(db_manager, self)
         self.folders = []
         self.files = []
-        self.selected_folder = None
+        self.selected_widget = None
 
         self.initializeUI()
 
@@ -50,12 +56,16 @@ class FileArea(QWidget):
 
         # create the tool bar and add to the main layout
         tool_bar = self.setUpToolBar()
+
+        # create the search and path widget area
+        search_bar = self.setUpSearchBar()
         # main layout
         main_lyt = QVBoxLayout()
         main_lyt.setContentsMargins(0, 0, 0, 0)
         main_lyt.setSpacing(0)
 
         main_lyt.addWidget(tool_bar)
+        main_lyt.addLayout(search_bar)
         main_lyt.addWidget(scroll_area)
         self.setLayout(main_lyt)
 
@@ -87,15 +97,11 @@ class FileArea(QWidget):
 
         tool_bar.addSeparator()
 
-        open_action = QAction(QIcon("img/sys/open-folder.png"), "Open", self)
-        open_action.triggered.connect(self.openSelectFolder)
-        tool_bar.addAction(open_action)
-
         new_folder_action = QAction(QIcon("img/sys/add-folder.png"), "New Folder", self)
         new_folder_action.triggered.connect(self.newFolder)
         tool_bar.addAction(new_folder_action)
 
-        add_files_action = QAction(QIcon("../img/sys/clipboard.png"), "Add Files", self)
+        add_files_action = QAction(QIcon("img/sys/add-file.png"), "Add Files", self)
         add_files_action.triggered.connect(self.addFiles)
         tool_bar.addAction(add_files_action)
 
@@ -109,9 +115,40 @@ class FileArea(QWidget):
         # add to the toolbar
         tool_bar.addWidget(self.viewChangedBox)
 
+        tool_bar.addSeparator()
+
+        open_action = QAction(QIcon("img/sys/open-folder.png"), "Open", self)
+        open_action.triggered.connect(self.openSelectFolder)
+        tool_bar.addAction(open_action)
+
+        rename_action = QAction(QIcon("img/sys/rename.png"), "Rename", self)
+        rename_action.triggered.connect(self.renameSeletedFolder)
+        tool_bar.addAction(rename_action)
+
+        delete_action = QAction(QIcon("img/sys/delete.png"), "Delete", self)
+        tool_bar.addAction(delete_action)
+
+        self.actions = [open_action, rename_action, delete_action]
+        [action.setDisabled(True) for action in self.actions]
+
 
 
         return tool_bar
+
+    def setUpSearchBar(self):
+
+        # create the widget
+        hbox = QHBoxLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+
+        self.search_bar = QLineEdit()
+        self.search_bar.setObjectName("search-bar")
+        self.search_bar.resize(QSize(700, 30))
+
+        hbox.addWidget(QLabel("Search"))
+        hbox.addWidget(self.search_bar)
+
+        return hbox
 
     def openFolder(self, path , back = False):
 
@@ -125,11 +162,24 @@ class FileArea(QWidget):
             self.files.append(widget)
 
         self.changeFolderMode(self.viewChangedBox.currentIndex())
+        # disabled the actions
+        [a.setDisabled(True) for a in self.actions]
 
     def openSelectFolder(self):
 
-        if self.selected_folder:
-            self.openFolder(self.selected_folder.path)
+        if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
+            self.openFolder(self.selected_widget.path)
+
+        elif self.selected_widget and isinstance(self.selected_widget, ImageWidget):
+            pass
+        else:
+            pass
+
+    def renameSeletedFolder(self):
+
+        if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
+            self.selected_widget.rename()
+
 
     def newFolder(self):
 
@@ -139,13 +189,17 @@ class FileArea(QWidget):
             self.folders.append(folder_widget)
 
             folder_widget.changeView(self.viewChangedBox.currentIndex())
+            count = len([*self.folders, *self.files])
+
             # add folder widget upon the view mode
             if self.viewChangedBox.currentIndex() == 0:
-                self.grid.addWidget(folder_widget, len(self.folders), 0)
+                self.grid.addWidget(folder_widget, count, 0)
             elif self.viewChangedBox.currentIndex() == 1:
+                [self.grid.removeWidget(w) for w in self.temp_labels]
                 [w.deleteLater() for w in self.temp_labels]
+
                 self.temp_labels.clear()
-                self.grid.addWidget(folder_widget, (len(self.folders)-1)//6, (len(self.folders)-1)%6)
+                self.grid.addWidget(folder_widget, (count-1)//6, (count-1)%6)
 
                 x = len([*self.folders , *self.files]) - 1
                 if x % 6 != 0:
@@ -160,28 +214,31 @@ class FileArea(QWidget):
         files, ok = QFileDialog.getOpenFileNames(self, "Add Files", "", "JPEG Files(*.jpg);;PNG Files(*.png)")
         if ok:
             file_widgets = self.file_engine.add_files(files)
-            print("file_widget")
+
+            count = len([*self.files, *self.folders])
             for w in file_widgets:
                 self.files.append(w)
-                w.changeViewMode(self.viewChangedBox.currentIndex())
-            print("chanheMode")
-            # add to the grid view this files
-            for w in file_widgets:
-                # add upon the view mode index
-                if self.viewChangedBox.currentIndex() == 0:
-                    self.grid.addWidget(w, len(self.folders), 0)
-                elif self.viewChangedBox.currentIndex() == 1:
-                    [w.deleteLater() for w in self.temp_labels]
-                    self.temp_labels.clear()
-                    self.grid.addWidget(w, (len(self.folders) - 1) // 6, (len(self.folders) - 1) % 6)
+                w.changeView(self.viewChangedBox.currentIndex())
 
-                    x = len([*self.folders, *self.files]) - 1
-                    if x % 6 != 0:
-                        while x % 6 != 0:
-                            x += 1
-                            label = QLabel()
-                            self.temp_labels.append(label)
-                            self.grid.addWidget(label, x // 6, x % 6)
+            # add to the grid view this files
+            if self.viewChangedBox.currentIndex() == 0:
+                for i, w in enumerate(file_widgets):
+                    self.grid.addWidget(w, i + count, 0)
+
+            elif self.viewChangedBox.currentIndex() == 1:
+                [w.deleteLater() for w in self.temp_labels]
+                self.temp_labels.clear()
+
+                for i, w in enumerate(file_widgets):
+                    self.grid.addWidget(w,  (i + count)// 6, (i + count)%6)
+
+                x = len([*self.folders, *self.files]) - 1
+                if x % 6 != 0:
+                    while x % 6 != 0:
+                        x += 1
+                        label = QLabel()
+                        self.temp_labels.append(label)
+                        self.grid.addWidget(label, x // 6, x % 6)
 
     def cleanArea(self):
 
@@ -203,15 +260,18 @@ class FileArea(QWidget):
         self.temp_labels.clear()
 
     def goBackward(self):
-        # print(self.file_engine.path_stack)
-        if self.file_engine.count() > 1:
-            index = self.file_engine.backward() - 1
+
+        if self.file_engine.count() > 1 and self.file_engine.path_stack.index(self.file_engine.current_path) != 0:
+            index = self.file_engine.backward() #- 1
             # open the last position
             self.openFolder(self.file_engine.path(index), back = True)
 
     def goForward(self):
 
-        pass
+        if self.file_engine.count() > 1 and self.file_engine.path_stack.index(self.file_engine.current_path) != self.file_engine.count() - 1:
+            index = self.file_engine.forward()
+            # open the folder
+            self.openFolder(self.file_engine.path(index), back=True)
 
     def changeFolderMode(self, index):
 
@@ -253,6 +313,10 @@ class FileArea(QWidget):
                 w.unselected()
 
         self.selected_widget = folder_wigdet
+        [a.setDisabled(False) for a in self.actions]
+
+        # fire the status signal
+        self.folder_status_signal.emit([self.selected_widget.name, self.selected_widget.path, self.selected_widget.time, self.selected_widget.fav])
 
     def selectFile(self, file_widget):
 
@@ -263,6 +327,10 @@ class FileArea(QWidget):
                 w.unselected()
 
         self.selected_widget = file_widget
+        [a.setDisabled(False) for a in self.actions]
+
+        if isinstance(file_widget, ImageWidget):
+            self.image_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
 
     def home(self):
 

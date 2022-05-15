@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
-    QGridLayout
+    QGridLayout, QInputDialog
 from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 import datetime
@@ -26,9 +26,7 @@ class FolderWidget(Folder, QWidget):
         self.time_label = QLabel(self.formatTime(f"{self.time}"))
         self.time_label.setObjectName("time-label")
 
-        self.favorite_button = QPushButton()
-        self.favorite_button.setObjectName("fav-button")
-        self.favorite_button.setIcon(QIcon("img/sys/star.png"))
+        self.setUpFavoriteButton()
 
         # create the grid
         self.grid = QGridLayout()
@@ -48,6 +46,28 @@ class FolderWidget(Folder, QWidget):
         self.layout().addWidget(self.baseWidget)
         self.setStyleSheet(style_sheet)
 
+    def setUpFavoriteButton(self):
+
+        self.favorite_button = QPushButton()
+        self.favorite_button.setFixedSize(QSize(30, 30))
+        self.favorite_button.setObjectName("fav-button")
+        self.favorite_button.setIconSize(QSize(25, 25))
+        self.favorite_button.pressed.connect(self.changeFav)
+
+        if self.fav:
+            self.favorite_button.setIcon(QIcon("img/sys/star.png"))
+        else:
+            self.favorite_button.setIcon(QIcon("img/sys/star (1).png"))
+
+    def changeFav(self):
+
+        self.fav = not self.fav
+        self.parent.file_engine.db_manager.change_favorite_folder(self.path ,self.fav)
+        if self.fav:
+            self.favorite_button.setIcon(QIcon("img/sys/star.png"))
+        else:
+            self.favorite_button.setIcon(QIcon("img/sys/star (1).png"))
+
     def changeView(self, index):
 
         # first remove the widget from grid
@@ -56,13 +76,13 @@ class FolderWidget(Folder, QWidget):
 
         if index == 0:
             self.name_label.setWordWrap(False)
-            self.grid.addWidget(self.favorite_button, 0, 2)
-            self.grid.addWidget(self.icon_label, 0, 0, 3, 1)
+            self.grid.addWidget(self.favorite_button, 0, 3)
+            self.grid.addWidget(self.icon_label, 0, 0, 2, 1)
             self.grid.addWidget(self.name_label, 1, 1)
-            self.grid.addWidget(self.time_label, 2, 2)
+            self.grid.addWidget(self.time_label, 1, 2)
 
             # adjust the size of the widget
-            self.setFixedHeight(230)
+            self.setFixedHeight(160)
             self.setMaximumWidth(2000)
 
         elif index == 1:
@@ -71,7 +91,7 @@ class FolderWidget(Folder, QWidget):
             self.grid.addWidget(self.icon_label, 1, 0, 1, 1)
             self.grid.addWidget(self.name_label, 2, 0, 1, 1)
             # adjust th size of the  widget
-            self.setFixedSize(QSize(250, 240))
+            self.setFixedSize(QSize(250, 220))
         else:
             pass
 
@@ -87,13 +107,25 @@ class FolderWidget(Folder, QWidget):
         folderMenu.addAction(open_action)
 
         rename_action = QAction(QIcon("img/sys/rename.png"), "Rename", self)
+        rename_action.triggered.connect(self.rename)
         folderMenu.addAction(rename_action)
 
         lock_action = QAction(QIcon("img/sys/lock.png"), "Lock", self)
         folderMenu.addAction(lock_action)
 
-        fav_action = QAction(QIcon("img/sys/star.png") , "Set Favorite", self)
+        fav_action = QAction(QIcon("img/sys/star.png") , "Change Favorite", self)
+        fav_action.triggered.connect(self.changeFav)
         folderMenu.addAction(fav_action)
+
+        folderMenu.addSeparator()
+
+        copy_action = QAction(QIcon("img/sys/copy.png"), "Copy", self)
+        folderMenu.addAction(copy_action)
+
+        move_action = QAction(QIcon("img/sys/forward.png"), "Move", self)
+        folderMenu.addAction(move_action)
+
+        folderMenu.addSeparator()
 
         delete_action = QAction(QIcon("img/sys/delete.png"),"Delete", self)
         folderMenu.addAction(delete_action)
@@ -131,6 +163,16 @@ class FolderWidget(Folder, QWidget):
         formatted_date, formatted_time = date_.toString("yyyy MMM dd"), time_.toString("hh:mm A")
 
         return f"created on {formatted_date} {formatted_time}"
+
+    def rename(self):
+
+        name, ok = QInputDialog.getText(self, "Rename Folder", "Folder New Name:", text=self.name)
+        if ok:
+            self.parent.file_engine.db_manager.rename_folder(self.path, name)
+            # set the label name
+            self.name = name
+            self.name_label.setText(name)
+
 
 if __name__ == "__main__":
     app = QApplication([])

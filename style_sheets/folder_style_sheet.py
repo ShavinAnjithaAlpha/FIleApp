@@ -22,8 +22,8 @@ style_sheet = """
                 background : none;
                 font-weight : 400;}
                 
-            QLabel#name-label {font-size : 25px;
-                            font-family : Helvetica;
+            QLabel#name-label {font-size : 28px;
+                            font-family : Calibri;
                             font-weight : normal;}
                             
             QLabel#time-label {color : rgb(150, 150, 150);

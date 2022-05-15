@@ -4,6 +4,7 @@ from PyQt5.QtCore import QSize, Qt, QDate, QTime
 from PyQt5.QtGui import QFont, QColor, QIcon
 
 from widgets.file_area import FileArea
+from widgets.status_widget_factory import WidgetFactory
 
 from util.db_manager import db_manager
 
@@ -28,22 +29,31 @@ class FileApp(QMainWindow):
         self.resize(self.full_size) # resize the window to the size of desktop
         # set up the dock area
         self.setUpDock()
-        # set up the tool  bar
-        # self.setUpToolBar()
         # set up the central widget
         self.setUpCentral()
 
-        self.setStyleSheet(style_sheet)
         self.show() # shoe window on the screen
 
     def setUpDock(self):
+        # declare the dock widgets liist
+        self.docks_widgets = []
+
         # create the dock area
         self.dock = QDockWidget("Status Bar", self)
-        self.dock.setMinimumWidth(int(self.full_size.width() * 0.15))
+        self.dock.setMinimumWidth(int(self.full_size.width() * 0.2))
         self.dock.setAllowedAreas(Qt.RightDockWidgetArea)
 
         self.dock.setFloating(False)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+
+        # create the vbox for the dock widget
+        self.dock_vbox = QVBoxLayout()
+        self.dock_vbox.setContentsMargins(0, 0, 0, 0)
+        widget = QWidget()
+        widget.setContentsMargins(0, 0, 0, 0)
+        widget.setLayout(self.dock_vbox)
+        self.dock.setWidget(widget)
+
 
     def setUpToolBar(self):
 
@@ -103,14 +113,21 @@ class FileApp(QMainWindow):
 
 
         # create the main tab widget
-        self.current_file_area = FileArea(self.db_manager)
+        self.current_file_area = FileArea(self.db_manager, self)
+        # bind the file area to signal slots
+        self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
+        self.current_file_area.image_status_signal.connect(self.createImageStatus)
+
         self.tab_bar.addTab(self.current_file_area , "Home")
         self.tab_bar.setCurrentIndex(0)
 
     def addNewFileTab(self, event):
 
         if event == self.tab_bar.tabBar().count() - 1:
-            self.current_file_area = FileArea(self.db_manager)
+            self.current_file_area = FileArea(self.db_manager, self)
+            self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
+            self.current_file_area.image_status_signal.connect(self.createImageStatus)
+
             self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home")
 
             self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
@@ -132,9 +149,60 @@ class FileApp(QMainWindow):
     def viewModeIndex(self):
         return self.view_mode_index
 
+    def createFolderStatus(self, data : list):
+
+        info = {
+            "Name" : data[0],
+            "Path" : data[1],
+            "Created at" : data[2].__str__(),
+            "favorite" : data[3]
+        }
+
+        status_widget = WidgetFactory.FolderStatusWidget(data[1], info)
+        if self.docks_widgets == []:
+            self.dock_vbox.addWidget(status_widget)
+            self.dock_vbox.addStretch()
+            self.docks_widgets.append(status_widget)
+
+        else:
+            # first remove the status widget
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
+            # update the list
+            self.docks_widgets.insert(0, status_widget)
+            self.dock_vbox.insertWidget(0, status_widget)
+
+    def createImageStatus(self, data : list):
+
+        info = {
+            "File" : data[0],
+            "Path" : data[1],
+            "Added at" : data[2],
+            "Favorite" : data[3]
+        }
+
+        status_widget = WidgetFactory.ImageStatusWidget(info)
+
+        if self.docks_widgets == []:
+            self.dock_vbox.addWidget(status_widget)
+            self.dock_vbox.addStretch()
+            self.docks_widgets.append(status_widget)
+
+        else:
+            # first remove the status widget
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
+            # update the list
+            self.docks_widgets.insert(0, status_widget)
+            self.dock_vbox.insertWidget(0, status_widget)
+
+
+
+
 
 if __name__ == "__main__":
     app = QApplication([])
+    app.setStyleSheet(style_sheet)
     window = FileApp()
     app.exec_()
 

@@ -58,11 +58,17 @@ class FileEngine:
         for file in files:
             file_widgets.append(ImageWidget(file, self.current_path, time, False, self.parent))
 
+        return file_widgets
+
 
     def backward(self):
 
-        self.path_stack.pop()
-        return len(self.path_stack)
+        # self.path_stack.pop()
+        return self.path_stack.index(self.current_path) - 1
+
+    def forward(self):
+
+        return self.path_stack.index(self.current_path) + 1
 
     def path(self, index):
         return self.path_stack[index]
