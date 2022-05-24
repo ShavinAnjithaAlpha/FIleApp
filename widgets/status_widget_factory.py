@@ -51,15 +51,25 @@ class WidgetFactory:
         form.addRow(title_label)
         form.addRow(icon_label)
 
-        for key in kwargs:
-            edit = QLineEdit()
-            edit.setContentsMargins(0, 0, 0, 0)
-            edit.setText(str(kwargs.get(key)))
-            edit.setReadOnly(True)
-            edit.setObjectName("field-edit")
+        WidgetFactory.addFormLine("Name" , WidgetFactory.getText(str(kwargs["Name"])), form)
+        WidgetFactory.addFormLine("Created at" , WidgetFactory.getText(kwargs["Created at"]), form)
+        WidgetFactory.addFormLine("Path" , WidgetFactory.getText(WidgetFactory.getStringPath(kwargs["Path"])), form)
+        WidgetFactory.addFormLine("Sub Folders",
+                                  WidgetFactory.getText(str(WidgetFactory.db_manager.folder_count(kwargs["Path"]))), form)
+        WidgetFactory.addFormLine("Files",
+                                  WidgetFactory.getText(str(WidgetFactory.db_manager.file_count(kwargs["Path"]))), form)
 
-            form.addRow(key, None)
-            form.addRow(edit)
+        fav_label = QLabel()
+        if kwargs["favorite"] == 1:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star.png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        else:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star (1).png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        form.addRow("Favorite", fav_label)
+
+
+
 
         widget.setStyleSheet(style_sheet)
         widget.setLayout(form)
@@ -67,12 +77,28 @@ class WidgetFactory:
         return widget
 
     @staticmethod
+    def addFormLine(key : str, edit : QLineEdit, form : QFormLayout):
+        form.addRow(key, None)
+        form.addRow(edit)
+
+
+    @staticmethod
+    def getText(text : str) -> QLineEdit:
+        edit = QLineEdit()
+        edit.setContentsMargins(0, 0, 0, 0)
+        edit.setText(text)
+        edit.setReadOnly(True)
+        edit.setObjectName("field-edit")
+
+        return edit
+
+    @staticmethod
     def ImageStatusWidget(kwargs):
 
         # get the size
         kwargs["Image Name"] = os.path.split(kwargs["File"])[1]
         kwargs["Size"] = WidgetFactory.format_size(os.stat(kwargs["File"]).st_size)
-        kwargs["Image Type"] = os.path.splitext(kwargs["File"])[1]
+        kwargs["Image Type"] = os.path.splitext(kwargs["File"])[1].upper()
 
         # format the time
         WidgetFactory.format_time(kwargs)
@@ -101,14 +127,21 @@ class WidgetFactory:
         form.addRow(title_label)
         form.addRow(icon_label)
 
-        for key in kwargs:
-            edit = QLineEdit()
-            edit.setText(str(kwargs.get(key)))
-            edit.setReadOnly(True)
-            edit.setObjectName("field-edit")
+        # add image details row to form
+        WidgetFactory.addFormLine("File Name" , WidgetFactory.getText(os.path.split(kwargs["File"])[1]), form)
+        WidgetFactory.addFormLine("Path" , WidgetFactory.getText(WidgetFactory.getStringPath(kwargs["Path"])), form)
+        WidgetFactory.addFormLine("Added at" , WidgetFactory.getText(kwargs["Added at"]), form)
+        WidgetFactory.addFormLine("Image Type" , WidgetFactory.getText(kwargs["Image Type"]), form)
+        WidgetFactory.addFormLine("Size" , WidgetFactory.getText(kwargs["Size"]), form)
 
-            form.addRow(key, None)
-            form.addRow(edit)
+        fav_label = QLabel()
+        if kwargs["Favorite"] == 1:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star.png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        else:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star (1).png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        form.addRow("Favorite", fav_label)
 
         widget.setStyleSheet(style_sheet)
         widget.setLayout(form)
@@ -148,23 +181,21 @@ class WidgetFactory:
         form.addRow(title_label)
         form.addRow(icon_label)
 
-        for key in kwargs:
-            edit = QLineEdit()
-            edit.setAlignment(Qt.AlignLeft)
-            edit.setText(str(kwargs.get(key)))
-            edit.setReadOnly(True)
-            edit.setObjectName("field-edit")
+        WidgetFactory.addFormLine("File" , WidgetFactory.getText(os.path.split(kwargs["File"])[1]), form)
+        WidgetFactory.addFormLine("Added at" , WidgetFactory.getText(kwargs["Added at"]), form)
+        WidgetFactory.addFormLine("File Type" , WidgetFactory.getText(kwargs["File Type"]), form)
+        WidgetFactory.addFormLine("Size" , WidgetFactory.getText(kwargs["Size"]), form)
 
-            form.addRow(key, None)
-            form.addRow(edit)
 
-        edit = QLineEdit()
-        edit.setAlignment(Qt.AlignLeft)
-        edit.setText(WidgetFactory.getStringPath(kwargs.get("Path")))
-        edit.setReadOnly(True)
-        edit.setObjectName("field-edit")
+        fav_label = QLabel()
+        if kwargs["Favorite"] == 1:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star.png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        else:
+            fav_label.setPixmap(
+                QPixmap("img/sys/star (1).png").scaled(QSize(25, 25), Qt.KeepAspectRatio, Qt.FastTransformation))
+        form.addRow("Favorite", fav_label)
 
-        form.addRow("Str. Path", edit)
         # end of details about the file widgets
 
         widget.setStyleSheet(style_sheet)

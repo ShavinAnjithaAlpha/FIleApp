@@ -169,20 +169,23 @@ class FileArea(QWidget):
         gr_box.setTitle("Actions")
 
         open_action = self.action_button("Open", QIcon("img/sys/open-folder.png"), self.openSelectFolder)
-
         rename_action = self.action_button("Rename", QIcon("img/sys/rename.png"), self.renameSeletedFolder)
-
         delete_action = self.action_button("Delete", QIcon("img/sys/delete.png"), lambda : None)
+        copy_action = self.action_button("Copy", QIcon("img/sys/copy.png"), lambda : None)
+        move_action = self.action_button("Move", QIcon("img/sys/forward.png"), lambda : None)
 
-        self.actions = [open_action, rename_action, delete_action]
+        self.actions = [open_action, rename_action, delete_action, copy_action, move_action]
         [action.setDisabled(True) for action in self.actions]
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(open_action)
-        hbox.addWidget(rename_action)
-        hbox.addWidget(delete_action)
+        grid = QGridLayout()
+        grid.setSpacing(0)
+        grid.addWidget(open_action, 0, 0)
+        grid.addWidget(rename_action, 0, 1)
+        grid.addWidget(delete_action, 0, 2)
+        grid.addWidget(copy_action, 1, 0)
+        grid.addWidget(move_action, 1, 1)
 
-        gr_box.setLayout(hbox)
+        gr_box.setLayout(grid)
         return gr_box
 
     def action_button(self, text, icon, func):
@@ -239,6 +242,7 @@ class FileArea(QWidget):
 
         # create the path bar
         self.path_bar = PathBar(self.file_engine.getStringPath(self.file_engine.current_path), self.file_engine.current_path)
+        self.path_bar.path_signal.connect(self.pathBarClicked)
 
 
         hbox.addWidget(searchButton)
@@ -247,6 +251,10 @@ class FileArea(QWidget):
         hbox.addStretch()
 
         return hbox
+
+    def pathBarClicked(self, path  :str):
+
+        self.openFolder(path)
 
     def openFolder(self, path , back = False):
 

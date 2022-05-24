@@ -116,6 +116,17 @@ class db_manager:
 
         return []
 
+    def folder_count(self, path  :str):
+        return len(self.open_folder(path))
+
+    def file_count(self, path : str):
+
+        with db_injector(self.path, False) as cursor:
+            cursor.execute("SELECT COUNT(file) FROM files WHERE path = ?", (path, ))
+            return cursor.fetchall()[0][0]
+
+        return 0
+
     def open_files(self, path  : str):
 
         with db_injector(self.path, False) as cursor:

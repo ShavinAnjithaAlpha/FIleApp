@@ -21,6 +21,6 @@ style_sheet = """
                                 margin : 0px;
                                 padding : 0px;
                                 padding-left : 15px;
-                                margin-left : 20px;}
+                                margin-left : 10px;}
                 
                 """
