@@ -5,7 +5,7 @@ style_sheet = """
                     background : none;
                     color : white;
                     font-weight : 400;
-                   border-bottom : 1px solid rgba(60, 60, 60, 0.7);
+                   border-bottom : 1px solid rgba(40, 40, 40, 0.7);
                     border-radius : 5px;}
                     
             QWidget#selected-folder-base {

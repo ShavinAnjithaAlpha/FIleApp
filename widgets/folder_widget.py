@@ -19,8 +19,8 @@ class FolderWidget(Folder, QWidget):
         self.name_label.setObjectName("name-label")
 
         self.icon_label = QLabel()
-        self.icon_label.setFixedSize(QSize(130, 100))
-        icon = QPixmap("img/sys/folder (1).png").scaled(self.icon_label.size() , Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.icon_label.setFixedSize(QSize(170, 130))
+        icon = QPixmap("img/sys/folder (2).png").scaled(self.icon_label.size() , Qt.KeepAspectRatio, Qt.FastTransformation)
         self.icon_label.setPixmap(icon)
 
         self.time_label = QLabel(self.formatTime(f"{self.time}"))
@@ -91,7 +91,7 @@ class FolderWidget(Folder, QWidget):
             self.grid.addWidget(self.icon_label, 1, 0, 1, 1)
             self.grid.addWidget(self.name_label, 2, 0, 1, 1)
             # adjust th size of the  widget
-            self.setFixedSize(QSize(250, 220))
+            self.setFixedSize(QSize(250, 250))
         else:
             pass
 

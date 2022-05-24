@@ -17,6 +17,10 @@ style_sheet = """
                                 
             QLineEdit#field-edit {background : rgb(25, 25, 25);
                                 border : none;
-                                color : rgb(150, 150, 150);}
+                                color : rgb(150, 150, 150);
+                                margin : 0px;
+                                padding : 0px;
+                                padding-left : 15px;
+                                margin-left : 20px;}
                 
                 """

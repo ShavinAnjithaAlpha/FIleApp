@@ -1,19 +1,23 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
                              QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QScrollArea,
-                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal
-from PyQt5.QtGui import QFont, QColor, QIcon, QCursor
+                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
+                             QActionGroup, QGraphicsEffect, QGraphicsDropShadowEffect)
+from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal, QPropertyAnimation
+from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
 
 from widgets.folder_widget import FolderWidget
 from widgets.image_widget import ImageWidget
+from widgets.file_widget import FileWidget
+from widgets.path_bar import PathBar
 
 
 class FileArea(QWidget):
 
     folder_status_signal = pyqtSignal(list)
     image_status_signal = pyqtSignal(list)
+    file_status_signal = pyqtSignal(list)
 
     def __init__(self, db_manager : db_manager ,parent = None):
         super(FileArea, self).__init__(parent)
@@ -82,71 +86,165 @@ class FileArea(QWidget):
         tool_bar.setIconSize(QSize(50, 50))
         tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
+        tool_bar.addWidget(self.navigationBox())
+
+        tool_bar.addSeparator()
+
+        tool_bar.addWidget(self.newBox())
+
+        tool_bar.addSeparator()
+
+        tool_bar.addWidget(self.viewBox())
+
+        tool_bar.addSeparator()
+
+        tool_bar.addWidget(self.actionBox())
+
+        return tool_bar
+
+    def navigationBox(self):
+         # create the group box
+        gr_box = QGroupBox()
+        gr_box.setTitle("Navigations")
+
         # create the actions
-        home_action = QAction(QIcon("img/sys/home.png"),"Home", self)
-        home_action.triggered.connect(self.home)
-        tool_bar.addAction(home_action)
+        home_action = self.action_button("", QIcon("img/sys/home.png"), self.home)
 
-        back_action = QAction(QIcon("img/sys/back.png"), "" ,self)
-        back_action.triggered.connect(self.goBackward)
-        tool_bar.addAction(back_action)
+        back_action = self.action_button("", QIcon("img/sys/back.png"), self.goBackward)
 
-        forward_action = QAction(QIcon("img/sys/right-arrow.png"), "",self)
-        forward_action.triggered.connect(self.goForward)
-        tool_bar.addAction(forward_action)
+        forward_action = self.action_button("", QIcon("img/sys/right-arrow.png"), self.goForward)
 
-        tool_bar.addSeparator()
 
-        new_folder_action = QAction(QIcon("img/sys/add-folder.png"), "New Folder", self)
-        new_folder_action.triggered.connect(self.newFolder)
-        tool_bar.addAction(new_folder_action)
+        hbox = QHBoxLayout()
+        hbox.addWidget(home_action)
+        hbox.addWidget(back_action)
+        hbox.addWidget(forward_action)
 
-        add_files_action = QAction(QIcon("img/sys/add-file.png"), "Add Files", self)
-        add_files_action.triggered.connect(self.addFiles)
-        tool_bar.addAction(add_files_action)
+        gr_box.setLayout(hbox)
+        return gr_box
 
-        tool_bar.addSeparator()
+
+    def viewBox(self):
+
+        # create the group box
+        gr_box = QGroupBox()
+        gr_box.setTitle("View Options")
 
         # add the view changed combo box
         self.viewChangedBox = QComboBox()
         self.viewChangedBox.addItem(QIcon("img/sys/list.png"), "List View", 0)
         self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View", 1)
         self.viewChangedBox.currentIndexChanged.connect(self.changeFolderMode)
-        # add to the toolbar
-        tool_bar.addWidget(self.viewChangedBox)
 
-        tool_bar.addSeparator()
+        vbox = QVBoxLayout()
+        vbox.addWidget(QLabel("Item View"))
+        vbox.addWidget(self.viewChangedBox)
+        vbox.addStretch()
 
-        open_action = QAction(QIcon("img/sys/open-folder.png"), "Open", self)
-        open_action.triggered.connect(self.openSelectFolder)
-        tool_bar.addAction(open_action)
+        gr_box.setLayout(vbox)
+        return gr_box
 
-        rename_action = QAction(QIcon("img/sys/rename.png"), "Rename", self)
-        rename_action.triggered.connect(self.renameSeletedFolder)
-        tool_bar.addAction(rename_action)
+    def newBox(self):
 
-        delete_action = QAction(QIcon("img/sys/delete.png"), "Delete", self)
-        tool_bar.addAction(delete_action)
+        # create the group box
+        gr_box = QGroupBox()
+        gr_box.setTitle("Add File Or Folder")
+        # new folder action
+        new_folder_action = self.action_button("New Folder", QIcon("img/sys/add-folder.png"), self.newFolder)
+        # add file action
+        add_files_action =self.action_button("Add Files", QIcon("img/sys/add-file.png"), self.addFiles)
+
+        # create the h box
+        hbox = QHBoxLayout()
+        hbox.addWidget(new_folder_action)
+        hbox.addWidget(add_files_action)
+
+        gr_box.setLayout(hbox)
+        return gr_box
+
+    def actionBox(self):
+
+        # create the group box
+        gr_box = QGroupBox()
+        gr_box.setTitle("Actions")
+
+        open_action = self.action_button("Open", QIcon("img/sys/open-folder.png"), self.openSelectFolder)
+
+        rename_action = self.action_button("Rename", QIcon("img/sys/rename.png"), self.renameSeletedFolder)
+
+        delete_action = self.action_button("Delete", QIcon("img/sys/delete.png"), lambda : None)
 
         self.actions = [open_action, rename_action, delete_action]
         [action.setDisabled(True) for action in self.actions]
 
+        hbox = QHBoxLayout()
+        hbox.addWidget(open_action)
+        hbox.addWidget(rename_action)
+        hbox.addWidget(delete_action)
 
+        gr_box.setLayout(hbox)
+        return gr_box
 
-        return tool_bar
+    def action_button(self, text, icon, func):
+
+        button = QPushButton(text)
+        button.setIcon(icon)
+        button.setIconSize(QSize(50, 50))
+        button.setObjectName("action_button")
+        # button.setLayoutDirection(Qt.RightToLeft)
+        # set the signal slot function
+        button.pressed.connect(func)
+
+        return button
+
+    def showAndHideSearchBar(self):
+
+        if self.search_bar.isVisible():
+            self.search_bar.hide()
+        else:
+            self.search_bar.show()
+
+            animation = QPropertyAnimation(self.search_bar, b"fixedWidth")
+            animation.setStartValue(0)
+            animation.setEndValue(300)
+            animation.setDuration(1000)
+
+            animation.start()
+
 
     def setUpSearchBar(self):
 
         # create the widget
         hbox = QHBoxLayout()
-        hbox.setContentsMargins(0, 0, 0, 0)
+        hbox.setContentsMargins(10, 20, 10, 20)
+
+        searchButton = QPushButton("")
+        searchButton.setIcon(QIcon("img/sys/search-icon.png"))
+        searchButton.setIconSize(QSize(40, 40))
+        searchButton.pressed.connect(self.showAndHideSearchBar)
+        searchButton.setObjectName("search-bar-button")
 
         self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search Anything")
         self.search_bar.setObjectName("search-bar")
-        self.search_bar.resize(QSize(700, 30))
+        self.search_bar.resize(QSize(300, 30))
+        self.search_bar.hide()
 
-        hbox.addWidget(QLabel("Search"))
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(25)
+        shadow.setColor(QColor(40, 40, 40))
+        shadow.setXOffset(-10)
+        # set the shadow
+        self.search_bar.setGraphicsEffect(shadow)
+
+        # create the path bar
+        self.path_bar = PathBar(self.file_engine.getStringPath(self.file_engine.current_path), self.file_engine.current_path)
+
+
+        hbox.addWidget(searchButton)
         hbox.addWidget(self.search_bar)
+        hbox.addWidget(self.path_bar)
+        hbox.addStretch()
 
         return hbox
 
@@ -164,13 +262,16 @@ class FileArea(QWidget):
         self.changeFolderMode(self.viewChangedBox.currentIndex())
         # disabled the actions
         [a.setDisabled(True) for a in self.actions]
+        # update the path bar
+
+        self.path_bar.setPath(self.file_engine.getStringPath(self.file_engine.current_path), self.file_engine.current_path)
 
     def openSelectFolder(self):
 
         if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
             self.openFolder(self.selected_widget.path)
 
-        elif self.selected_widget and isinstance(self.selected_widget, ImageWidget):
+        elif self.selected_widget and isinstance(self.selected_widget, ImageWidget) or isinstance(self.selected_widget, FileWidget):
             pass
         else:
             pass
@@ -211,7 +312,7 @@ class FileArea(QWidget):
 
     def addFiles(self):
 
-        files, ok = QFileDialog.getOpenFileNames(self, "Add Files", "", "JPEG Files(*.jpg);;PNG Files(*.png)")
+        files, ok = QFileDialog.getOpenFileNames(self, "Add Files", "", "All File(*.*)")
         if ok:
             file_widgets = self.file_engine.add_files(files)
 
@@ -331,6 +432,8 @@ class FileArea(QWidget):
 
         if isinstance(file_widget, ImageWidget):
             self.image_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
+        elif isinstance(file_widget, FileWidget):
+            self.file_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
 
     def home(self):
 

@@ -5,6 +5,7 @@ from util.db_manager import db_manager
 
 from widgets.folder_widget import FolderWidget
 from widgets.image_widget import ImageWidget
+from widgets.file_widget import FileWidget
 
 class FileEngine:
     def __init__(self, db_manager : db_manager, parent = None):
@@ -30,7 +31,8 @@ class FileEngine:
                 widget = ImageWidget(item[0], item[1], item[2], item[3], self.parent)
                 files_widget.append(widget)
             else:
-                pass
+                widget = FileWidget(item[0], item[1], item[2], item[3], self.parent)
+                files_widget.append(widget)
 
 
 
@@ -52,11 +54,15 @@ class FileEngine:
     def add_files(self, files : list[str]):
 
         time = self.db_manager.add_files(files, self.current_path)
-        # return the files widget lists
+        # return the file widget lists
 
         file_widgets = []
         for file in files:
-            file_widgets.append(ImageWidget(file, self.current_path, time, False, self.parent))
+            if self.getFileType(file) == "img":
+                file_widgets.append(ImageWidget(file, self.current_path, time, False, self.parent))
+            else:
+                file_widgets.append(FileWidget(file, self.current_path, time, False, self.parent))
+
 
         return file_widgets
 
@@ -87,3 +93,18 @@ class FileEngine:
             return "vid"
         else:
             return "other"
+
+    def getStringPath(self, path : str) -> list[str]:
+
+        split_path = path.split(".")[1:]
+        path_ = ""
+        names = []
+
+        for item in split_path:
+            path_ += ".{}".format(item)
+            try:
+                names.append(self.db_manager.get_folder_name(path_))
+            except:
+                pass
+
+        return names

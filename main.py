@@ -117,6 +117,7 @@ class FileApp(QMainWindow):
         # bind the file area to signal slots
         self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
         self.current_file_area.image_status_signal.connect(self.createImageStatus)
+        self.current_file_area.file_status_signal.connect(self.createFileStatus)
 
         self.tab_bar.addTab(self.current_file_area , "Home")
         self.tab_bar.setCurrentIndex(0)
@@ -127,6 +128,7 @@ class FileApp(QMainWindow):
             self.current_file_area = FileArea(self.db_manager, self)
             self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
             self.current_file_area.image_status_signal.connect(self.createImageStatus)
+            self.current_file_area.file_status_signal.connect(self.createFileStatus)
 
             self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home")
 
@@ -183,6 +185,29 @@ class FileApp(QMainWindow):
 
         status_widget = WidgetFactory.ImageStatusWidget(info)
 
+        if self.docks_widgets == []:
+            self.dock_vbox.addWidget(status_widget)
+            self.dock_vbox.addStretch()
+            self.docks_widgets.append(status_widget)
+
+        else:
+            # first remove the status widget
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
+            # update the list
+            self.docks_widgets.insert(0, status_widget)
+            self.dock_vbox.insertWidget(0, status_widget)
+
+    def createFileStatus(self, data : list):
+
+        info = {
+            "File" : data[0],
+            "Path" : data[1],
+            "Added at" : data[2],
+            "Favorite" : data[3]
+        }
+
+        status_widget = WidgetFactory.FileStatusWidget(info)
         if self.docks_widgets == []:
             self.dock_vbox.addWidget(status_widget)
             self.dock_vbox.addStretch()

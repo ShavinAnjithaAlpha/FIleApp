@@ -128,9 +128,9 @@ class db_manager:
     def get_folder_name(self, path : str):
 
         with db_injector(self.path, False) as cursor:
-            cursor.execute(f"SELECT name FROM folders WHERE path = '{path}' ")
+            cursor.execute(f"SELECT name FROM folders WHERE path = ? ", (path, ))
             data = cursor.fetchall()
-            if data:
+            if data != []:
                 name = data[0][0]
             else:
                 name = None

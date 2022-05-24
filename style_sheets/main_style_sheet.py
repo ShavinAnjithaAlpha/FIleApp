@@ -46,13 +46,12 @@ style_sheet = """
                     border : none;
                     margin : 0px;}
                     
-            QTabBar::tab {background : black;
+            QTabBar::tab {background : rgb(70,70, 70);
                         border : none;
                         padding : 10px 30px;
-                        border-top-right-radius : 10px;
-                        border-top-left-radius : 10px;}
+                        border-radius : 10px;}
                                                 
-            QTabBar::tab:hover {background-color : rgb(20, 20, 20)}
+            QTabBar::tab:hover {background-color : rgb(50, 50, 50)}
                 
             QTabBar::tab:selected {background-color : rgb(240, 70, 5);
                                     color : black}
@@ -168,6 +167,7 @@ style_sheet = """
                             
             QSeparator {background-color : white;
                         border-color : white;
+                        border-width : 5px;
                         width : 3px;}
                         
             
@@ -185,10 +185,35 @@ style_sheet = """
                                         border-left : 2px solid rgb(120, 120, 120);
                                         border-radius : 7px;}
                             
-            QLineEdit#search-bar {background-color : QLinearGradient(x1 : 0, y1 : 0, x2  : 1, y2 : 0, stop : 0 rgb(40, 40, 40), stop : 1 rgb(60, 60,60));
+            QLineEdit#search-bar {background-color : rgb(80, 80, 80);
                                     padding : 10px;
                                     font-size  : 25px;
                                     border-radius : 18px;
                                     border : none;}
+                                    
+            
+            QGroupBox {
+                border: 0.5px solid rgb(70, 70, 70);
+                border-radius: 8px;
+                font-size : 18px;
+                margin : 10px; /* leave space at the top for the title */
+}
+                                    
+            QPushButton#action_button {background : none;
+                                        border : none;
+                                        font-size : 18px;
+                                        text-align : align-bottom;
+                                        color : white}
+                                        
+            QPushButton#action_button:hover {background-color  :rgba(70, 70, 70, 0.5);
+                                            border-radius : 8px;
+                                            }
+                                            
+            QPushButton#search-bar-button {
+                    background : none;
+                    color : white;
+                    padding : 12px;}
+            QPushButton#search-bar-button:hover {background-color : rgba(50, 50, 50, 0.5)}    
+                    
         
             """
