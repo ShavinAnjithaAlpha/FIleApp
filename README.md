@@ -1,6 +1,6 @@
 # FileApp
 
-<p>File App is a basic impleemtation of the file manager interface in the customize way.In this file app we can organize your files in your own way ratger than is disk 
+<p>File App is a basic impleemtation of the file manager interface in the customize way.In this file app we can organize your files in your own way rather than in disk 
 file system arragement. you can create virtual folders and add files in to these folders.This app consisit most of basic features supplied with other many file manager app
 such as status panel, searching files and folders, copy paste move mechnics, add folder and files, change view of folder and file, sorting file and folders, add to favorites
 etc.., and app extend to add password added to folders, virtual recycle bin, favorite file folders panel etc...</p>
