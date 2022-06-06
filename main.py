@@ -7,6 +7,8 @@ from widgets.file_area import FileArea
 from widgets.status_widget_factory import WidgetFactory
 from widgets.favorite_panel import FavoritePanel
 
+from apps.photo_viewer import PhotoViewer
+
 from util.db_manager import db_manager
 
 from style_sheets.main_style_sheet import style_sheet
@@ -224,12 +226,19 @@ class FileApp(QMainWindow):
 
         self.current_file_area = FileArea(self.db_manager, self, path = path)
         # self.current_file_area.openFolder(path)
-        # self.favorite_area.folder_open_signal.connect(self.openFavoriteFolder)
         self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home(%d)".format(self.tab_bar.count()))
 
         self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
 
+    def openImages(self, images : list[str], index : int):
 
+        # create the photo viewer widget
+        photoViewer = PhotoViewer(images, index)
+
+        self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, photoViewer,
+                               "Image Viewer")
+
+        self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
 
 
 

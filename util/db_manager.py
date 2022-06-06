@@ -67,14 +67,14 @@ class db_manager:
                                                     fav BOOLEAN NOT NULL)""")
             print("[INFO] database create successfull.")
 
-    def add_folder(self, name : str , parent_path : str):
+    def add_folder(self, name : str , parent_path : str, type  : str):
 
         folder_path = path_manager.get_path_for_folder(parent_path, self.get_paths(parent_path))
 
         now = datetime.datetime.now()
         with db_injector(self.path) as cursor:
-            cursor.execute("INSERT INTO folders(name, path, time, fav) VALUES(?, ?, ?, ?)", (name, folder_path,
-                                                                                               now, False))
+            cursor.execute("INSERT INTO folders(name, path, time, fav, type) VALUES(?, ?, ?, ?, ?)", (name, folder_path,
+                                                                                               now, False, type))
         return folder_path
 
     def add_file(self, file : str , path : str):

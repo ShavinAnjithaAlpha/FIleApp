@@ -2,7 +2,7 @@ import os.path
 
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
     QGridLayout, QMessageBox, QSizePolicy
-from PyQt5.QtCore import Qt, QSize, QTime, QDate
+from PyQt5.QtCore import Qt, QSize, QTime, QDate, pyqtSignal
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 import datetime
 
@@ -11,6 +11,8 @@ from util.File import File
 from style_sheets.image_style_sheet import style_sheet
 
 class ImageWidget(File, QWidget):
+
+    image_open_signal = pyqtSignal(str)
 
     def __init__(self, file, path, time, fav = False, parent = None):
         super(ImageWidget, self).__init__(file, path, time, fav)
@@ -122,7 +124,7 @@ class ImageWidget(File, QWidget):
 
         # create the actions
         open_action = QAction(QIcon("img/sys/photo.png"),"Open", self)
-        open_action.triggered.connect(lambda : print("opened"))
+        open_action.triggered.connect(lambda : self.image_open_signal.emit(self.file))
         menu.addAction(open_action)
 
         open_os_action = QAction(QIcon("img/sys/picture.png"), "Open By OS", self)

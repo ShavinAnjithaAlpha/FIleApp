@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QActionGroup, QGraphicsEffect, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal, QPropertyAnimation
 from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap
-from util.file_engine import FileEngine
+
 from util.db_manager import db_manager
 
 from widgets.folder_widget import FolderWidget

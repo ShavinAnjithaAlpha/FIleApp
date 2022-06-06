@@ -21,9 +21,13 @@ class FileArea(QWidget):
     image_status_signal = pyqtSignal(list)
     file_status_signal = pyqtSignal(list)
 
+    FOLDER_TYPES = {"Normal" : "N", "Image Folder" : "I", "Video Folder" : "V","Document Folder" : "D",
+                    "System Folder" : "S", "Red" : "RED", "Green" : "GREEN", "Blue" : "BLUE"}
+
     def __init__(self, db_manager : db_manager ,parent = None, * , path = ""):
         super(FileArea, self).__init__(parent)
         # declare the attributes
+        self.parent = parent
         self.db_manager = db_manager
         self.file_engine = FileEngine(db_manager, self)
         if path:
@@ -52,6 +56,7 @@ class FileArea(QWidget):
 
         # create the grid layout for widget
         self.grid = QGridLayout()
+        self.grid.setSpacing(0)
         self.grid.setContentsMargins(0, 0, 0, 0)
         hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
@@ -63,7 +68,7 @@ class FileArea(QWidget):
         vbox.addLayout(hbox)
         self.mainWidget.setLayout(vbox)
 
-        # create the tool bar and add to the main layout
+        # create the toolbar and add to the main layout
         tool_bar = self.setUpToolBar()
 
         # create the search and path widget area
@@ -142,12 +147,14 @@ class FileArea(QWidget):
         self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View", 1)
         self.viewChangedBox.currentIndexChanged.connect(self.changeFolderMode)
 
-        vbox = QVBoxLayout()
-        vbox.addWidget(QLabel("Item View"))
-        vbox.addWidget(self.viewChangedBox)
-        vbox.addStretch()
+        refresh_button = self.action_button("", QIcon("img/sys/circle (2).png"), self.refresh)
 
-        gr_box.setLayout(vbox)
+        grid = QGridLayout()
+        grid.addWidget(QLabel("Item View"), 0, 0)
+        grid.addWidget(self.viewChangedBox, 1, 0)
+        grid.addWidget(refresh_button, 0, 1, 2, 1, alignment=Qt.AlignVCenter)
+
+        gr_box.setLayout(grid)
         return gr_box
 
     def newBox(self):
@@ -290,7 +297,11 @@ class FileArea(QWidget):
         for i, widget in enumerate(folder_widgets):
             self.folders.append(widget)
         for widget in files_widgets:
+            # set the signal slots
+            if isinstance(widget , ImageWidget):
+                widget.image_open_signal.connect(self.loadToPhotoViwer)
             self.files.append(widget)
+
 
         self.changeFolderMode(self.viewChangedBox.currentIndex())
         # disabled the actions
@@ -309,6 +320,10 @@ class FileArea(QWidget):
         else:
             pass
 
+    def refresh(self):
+
+        self.openFolder(self.file_engine.current_path)
+
     def renameSeletedFolder(self):
 
         if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
@@ -326,29 +341,31 @@ class FileArea(QWidget):
 
         name, ok = QInputDialog.getText(self, "New Folder", "Folder Name:", text="New Folder")
         if ok:
-            folder_widget = self.file_engine.new_folder(name)
-            self.folders.append(folder_widget)
+            type_, ok = QInputDialog.getItem(self, "Folder Type", "Select Folder Type", self.FOLDER_TYPES.keys(), 0)
+            if ok:
+                folder_widget = self.file_engine.new_folder(name, type_)
+                self.folders.append(folder_widget)
 
-            folder_widget.changeView(self.viewChangedBox.currentIndex())
-            count = len([*self.folders, *self.files])
+                folder_widget.changeView(self.viewChangedBox.currentIndex())
+                count = len([*self.folders, *self.files])
 
-            # add folder widget upon the view mode
-            if self.viewChangedBox.currentIndex() == 0:
-                self.grid.addWidget(folder_widget, count, 0)
-            elif self.viewChangedBox.currentIndex() == 1:
-                [self.grid.removeWidget(w) for w in self.temp_labels]
-                [w.deleteLater() for w in self.temp_labels]
+                # add folder widget upon the view mode
+                if self.viewChangedBox.currentIndex() == 0:
+                    self.grid.addWidget(folder_widget, count, 0)
+                elif self.viewChangedBox.currentIndex() == 1:
+                    [self.grid.removeWidget(w) for w in self.temp_labels]
+                    [w.deleteLater() for w in self.temp_labels]
 
-                self.temp_labels.clear()
-                self.grid.addWidget(folder_widget, (count-1)//6, (count-1)%6)
+                    self.temp_labels.clear()
+                    self.grid.addWidget(folder_widget, (count - 1) // 6, (count - 1) % 6)
 
-                x = len([*self.folders , *self.files]) - 1
-                if x % 6 != 0:
-                    while x % 6 != 0:
-                        x += 1
-                        label = QLabel()
-                        self.temp_labels.append(label)
-                        self.grid.addWidget(label, x // 6, x % 6)
+                    x = len([*self.folders, *self.files]) - 1
+                    if x % 6 != 0:
+                        while x % 6 != 0:
+                            x += 1
+                            label = QLabel()
+                            self.temp_labels.append(label)
+                            self.grid.addWidget(label, x // 6, x % 6)
 
     def addFiles(self):
 
@@ -452,21 +469,21 @@ class FileArea(QWidget):
     def selected(self, folder_wigdet : FolderWidget):
 
         for w in [*self.folders, *self.files]:
-            if w == folder_wigdet:
+            if w == folder_wigdet and w is not None:
                 w.selected()
             else:
                 w.unselected()
 
         self.selected_widget = folder_wigdet
         [a.setDisabled(False) for a in self.actions]
-
+        #
         # fire the status signal
         self.folder_status_signal.emit([self.selected_widget.name, self.selected_widget.path, self.selected_widget.time, self.selected_widget.fav])
 
     def selectFile(self, file_widget):
 
         for w in [*self.folders, *self.files]:
-            if w == file_widget:
+            if w == file_widget and w is not None:
                 w.selected()
             else:
                 w.unselected()
@@ -474,10 +491,12 @@ class FileArea(QWidget):
         self.selected_widget = file_widget
         [a.setDisabled(False) for a in self.actions]
 
-        if isinstance(file_widget, ImageWidget):
-            self.image_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
-        elif isinstance(file_widget, FileWidget):
-            self.file_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
+        if self.selected_widget:
+            if isinstance(file_widget, ImageWidget):
+                self.image_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
+            elif isinstance(file_widget, FileWidget):
+                self.file_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
+
 
     def home(self):
 
@@ -518,4 +537,13 @@ class FileArea(QWidget):
                 widget.show()
             else:
                 widget.hide()
+
+    def loadToPhotoViwer(self, current_file : str):
+
+        image_files = []
+        for w in self.files:
+            if isinstance(w, ImageWidget):
+                image_files.append(w.file)
+
+        self.parent.openImages(image_files, image_files.index(current_file))
 

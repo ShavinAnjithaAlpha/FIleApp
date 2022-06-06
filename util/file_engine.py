@@ -8,6 +8,9 @@ from widgets.image_widget import ImageWidget
 from widgets.file_widget import FileWidget
 
 class FileEngine:
+    FOLDER_TYPES = {"Normal": "N", "Image Folder": "I", "Video Folder": "V", "Document Folder": "D",
+                    "System Folder": "S", "Red": "RED", "Green": "GREEN", "Blue": "BLUE"}
+
     def __init__(self, db_manager : db_manager, parent = None):
         self.parent = parent
         self.current_path = "."
@@ -43,13 +46,13 @@ class FileEngine:
 
         return (folder_widgets, files_widget)
 
-    def new_folder(self , name : str):
+    def new_folder(self , name : str, type : str):
 
-        folder_path = self.db_manager.add_folder(name, self.current_path)
+        folder_path = self.db_manager.add_folder(name, self.current_path, self.FOLDER_TYPES[type])
         # create the Folder Widget
         data = self.db_manager.folder(folder_path)
 
-        return FolderWidget(data[0], data[1], data[2], data[3], self.parent)
+        return FolderWidget(data[0], data[1], data[2], data[3], self.FOLDER_TYPES[type], self.parent)
 
     def add_files(self, files : list[str]):
 

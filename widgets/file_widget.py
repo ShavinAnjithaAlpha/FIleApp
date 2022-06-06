@@ -110,6 +110,8 @@ class FileWidget(File, QWidget):
             self.grid.removeWidget(w)
 
         if index == 0:
+            self.file_name_label.setMaximumWidth(1500)
+
             self.grid.addWidget(self.imageView, 0, 0, alignment=Qt.AlignVCenter)
             self.grid.addWidget(self.file_name_label, 0, 1, alignment=Qt.AlignLeft)
             self.grid.addWidget(self.size_label, 0, 2)
@@ -120,6 +122,8 @@ class FileWidget(File, QWidget):
             self.setMaximumWidth(2000)
 
         elif index == 1:
+            self.file_name_label.setMaximumWidth(230)
+
             self.size_label.hide() # hide the size label from grid view
             self.grid.addWidget(self.fav_button, 0, 0, alignment=Qt.AlignRight)
             self.grid.addWidget(self.imageView, 1, 0, alignment=Qt.AlignCenter)

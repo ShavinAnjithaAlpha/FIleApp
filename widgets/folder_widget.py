@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLay
     QGridLayout, QInputDialog, QMessageBox, QSizePolicy
 from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
-import datetime
 
 from util.Folder import Folder
 
@@ -67,6 +66,7 @@ class FolderWidget(Folder, QWidget):
             self.favorite_button.setIcon(QIcon("img/sys/star.png"))
         else:
             self.favorite_button.setIcon(QIcon("img/sys/star (1).png"))
+
 
     def changeView(self, index):
 
@@ -216,7 +216,7 @@ class FolderWidget(Folder, QWidget):
         # ask first for confirmation
         button = QMessageBox()
         button.setIconPixmap(QPixmap("img/sys/close.png").scaled(QSize(60, 60), Qt.KeepAspectRatio, Qt.FastTransformation))
-        button.setText("Are you sure to remove permantly\n '{}' folder?".format(self.name))
+        button.setText("Are you sure to remove permanantly\n '{}' folder?".format(self.name))
         button.setWindowTitle("Remove Folder")
         button.setStandardButtons(QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
 
@@ -231,18 +231,23 @@ class FolderWidget(Folder, QWidget):
 
     def setFolderIcon(self, type : str):
 
-        if type == "N":
-            icon = QPixmap("img/sys/folder (1).png").scaledToHeight(self.icon_label.height())
-        elif type == "I":
+        if type == "I":
             icon = QPixmap("img/sys/image_folder.png").scaledToHeight(self.icon_label.height())
         elif type == "V":
             icon = QPixmap("img/sys/video_folder.png").scaledToHeight(self.icon_label.height())
         elif type == "D":
             icon = QPixmap("img/sys/doc_folder.png").scaledToHeight(self.icon_label.height())
+        elif type == "S":
+            icon = QPixmap("img/sys/system.png").scaledToHeight(self.icon_label.height())
         elif type == "GREEN":
             icon = QPixmap("img/sys/green_folder.png").scaledToHeight(self.icon_label.height())
         elif type == "YELLOW":
             icon = QPixmap("img/sys/yellow_folder.png").scaledToHeight(self.icon_label.height())
+        elif type == "BLUE":
+            icon = QPixmap("img/sys/blue_folder.png").scaledToHeight(self.icon_label.height())
+        else:
+            icon = QPixmap("img/sys/folder (1).png").scaledToHeight(self.icon_label.height())
+
         self.icon_label.setPixmap(icon)
 
 
