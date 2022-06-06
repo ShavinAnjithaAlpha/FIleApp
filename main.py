@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QColor, QIcon
 
 from widgets.file_area import FileArea
 from widgets.status_widget_factory import WidgetFactory
+from widgets.favorite_panel import FavoritePanel
 
 from util.db_manager import db_manager
 
@@ -27,6 +28,8 @@ class FileApp(QMainWindow):
 
         self.setWindowTitle("Files Manager")
         self.resize(self.full_size) # resize the window to the size of desktop
+        # set up the toolbar
+        self.setUpToolBar()
         # set up the dock area
         self.setUpDock()
         # set up the central widget
@@ -35,7 +38,7 @@ class FileApp(QMainWindow):
         self.show() # shoe window on the screen
 
     def setUpDock(self):
-        # declare the dock widgets liist
+        # declare the dock widgets list
         self.docks_widgets = []
 
         # create the dock area
@@ -59,39 +62,17 @@ class FileApp(QMainWindow):
 
         # create the tool bar
         self.tool_bar = QToolBar("Tool Bar")
-        self.tool_bar.setIconSize(QSize(50, 50))
-        self.tool_bar.setMinimumHeight(int(self.full_size.height() * 0.13))
-        self.tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.tool_bar.setIconSize(QSize(20, 20))
+        self.tool_bar.setFixedHeight(int(self.full_size.height() * 0.09))
+        self.tool_bar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.addToolBar(Qt.TopToolBarArea, self.tool_bar)
 
 
-        self.tool_bar.addAction(QIcon("img/sys/home.png"), "Home",
-                                lambda : self.tab_bar.currentWidget().home())
 
-        self.tool_bar.addAction(QIcon("img/sys/back.png"), "",
-                                lambda: self.tab_bar.currentWidget().goBackward())
-
-        self.tool_bar.addAction(QIcon("img/sys/right-arrow.png"), "",
-                                lambda: print("forward"))
-
-        self.tool_bar.addSeparator()
-
-        self.tool_bar.addAction(QIcon("img/sys/open-folder.png"), "Open",
-                                lambda : print("open"))
-
-        self.tool_bar.addAction(QIcon("img/sys/add-folder.png"), "New Folder",
-                                lambda: self.tab_bar.currentWidget().newFolder())
-
-
-
-        self.tool_bar.addSeparator()
-        # add the view changed combo box
-        self.viewChangedBox = QComboBox()
-        self.viewChangedBox.addItem(QIcon("img/sys/list.png"), "List View",0)
-        self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View",1)
-        self.viewChangedBox.currentIndexChanged.connect(self.changeFolderView)
-        # add to the tool bar
-        self.tool_bar.addWidget(self.viewChangedBox)
+        self.tool_bar.addAction(QIcon("img/sys/trash.png"), "Recycle Bin",
+                                self.openRecycleBin)
+        self.tool_bar.addAction(QIcon("img/sys/star.png"), "Favorites",
+                                self.openFavorites)
 
 
 
@@ -130,7 +111,7 @@ class FileApp(QMainWindow):
             self.current_file_area.image_status_signal.connect(self.createImageStatus)
             self.current_file_area.file_status_signal.connect(self.createFileStatus)
 
-            self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home")
+            self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home({})".format(self.tab_bar.count()))
 
             self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
 
@@ -220,6 +201,33 @@ class FileApp(QMainWindow):
             # update the list
             self.docks_widgets.insert(0, status_widget)
             self.dock_vbox.insertWidget(0, status_widget)
+
+    def openRecycleBin(self):
+
+        self.current_file_area = FileArea(self.db_manager, self)
+        self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Recycle Bin")
+
+        self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
+
+        pass
+
+    def openFavorites(self):
+
+        self.favorite_area = FavoritePanel(self.db_manager, self)
+        self.favorite_area.folder_open_signal.connect(self.openFavoriteFolder)
+        self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.favorite_area, "Favorite")
+
+        self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
+
+
+    def openFavoriteFolder(self, path : str):
+
+        self.current_file_area = FileArea(self.db_manager, self, path = path)
+        # self.current_file_area.openFolder(path)
+        # self.favorite_area.folder_open_signal.connect(self.openFavoriteFolder)
+        self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home(%d)".format(self.tab_bar.count()))
+
+        self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
 
 
 

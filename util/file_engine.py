@@ -23,7 +23,7 @@ class FileEngine:
         files_widget = []
         for item in folder_data:
             # create the folder widgets and return it
-            widget = FolderWidget(item[0], item[1], item[2], item[3], self.parent)
+            widget = FolderWidget(item[0], item[1], item[2], item[3], item[4], item[5], self.parent)
             folder_widgets.append(widget)
 
         for item in files_data:
@@ -108,3 +108,25 @@ class FileEngine:
                 pass
 
         return names
+
+    def open_favorites(self):
+
+        folder_data = self.db_manager.open_favorites_folders()
+        files_data = self.db_manager.open_favorites_files()
+
+        folder_widgets = []
+        files_widget = []
+        for item in folder_data:
+            # create the folder widgets and return it
+            widget = FolderWidget(item[0], item[1], item[2], item[3], self.parent)
+            folder_widgets.append(widget)
+
+        for item in files_data:
+            if self.getFileType(item[0]) == "img":
+                widget = ImageWidget(item[0], item[1], item[2], item[3], self.parent)
+                files_widget.append(widget)
+            else:
+                widget = FileWidget(item[0], item[1], item[2], item[3], self.parent)
+                files_widget.append(widget)
+
+        return (folder_widgets, files_widget)

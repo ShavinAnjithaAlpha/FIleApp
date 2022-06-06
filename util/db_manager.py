@@ -40,7 +40,8 @@ class db_manager:
                                         name VARCHAR(150) NOT NULL,
                                         path TEXT NOT NULL UNIQUE ,
                                         time TIMESTAMP NOT NULL ,
-                                        fav BOOLEAN NOT NULL)"""
+                                        fav BOOLEAN NOT NULL,
+                                        type TEXT NOT NULL 'N')"""
             )
 
             cursor.execute("""
@@ -49,6 +50,21 @@ class db_manager:
                                         path TEXT NOT NULL,
                                         time TIMESTAMP NOT NULL,
                                         fav BOOLEAN NOT NULL)""")
+
+            cursor.execute(
+                """CREATE TABLE recycle_folders(id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL ,
+                                        name VARCHAR(150) NOT NULL,
+                                        path TEXT NOT NULL UNIQUE ,
+                                        time TIMESTAMP NOT NULL ,
+                                        fav BOOLEAN NOT NULL)"""
+            )
+
+            cursor.execute("""
+                                CREATE TABLE recycle_files(id INTEGER PRIMARY KEY AUTOINCREMENT  UNIQUE NOT NULL,
+                                                    file TEXT NOT NULL,
+                                                    path TEXT NOT NULL,
+                                                    time TIMESTAMP NOT NULL,
+                                                    fav BOOLEAN NOT NULL)""")
             print("[INFO] database create successfull.")
 
     def add_folder(self, name : str , parent_path : str):
@@ -99,7 +115,7 @@ class db_manager:
     def open_folder(self, path : str):
 
         with db_injector(self.path, False) as cursor:
-            cursor.execute(f"SELECT name, path, time, fav FROM folders WHERE path LIKE ? ORDER BY time " ,
+            cursor.execute(f"SELECT name, path, time, fav, type ,pw FROM folders WHERE path LIKE ? ORDER BY time " ,
                            (f"{path}_%", ))
             paths = cursor.fetchall()
 
@@ -163,7 +179,7 @@ class db_manager:
 
         with db_injector(self.path, False) as cursor:
             cursor.execute(
-                "SELECT name, path ,time, fav FROM folders WHERE path LIKE ? ", (path ,))
+                "SELECT name, path ,time, fav, type, pw FROM folders WHERE path LIKE ? ", (path ,))
             return cursor.fetchall()[0]
 
         return []
@@ -208,3 +224,74 @@ class db_manager:
             return len(cursor.fetchall())
 
         return 0
+
+    def deleteFolder(self, path : str) -> bool:
+
+        # get the info about the folder
+        with db_injector(self.path) as cursor:
+            cursor.execute("SELECT * FROM folders WHERE path =  ?", (path, ))
+            data = cursor.fetchall()
+
+            if data:
+                cursor.execute("DELETE FROM folders WHERE path = ? ", (path, ))
+                # add to the recycle bin table
+                cursor.execute("INSERT INTO recycle_folders(id, name, path, time, fav) VALUES(?, ?, ? ,?, ?)", data[0])
+                return True
+        return False
+
+    def deleteFile(self, path: str , file : str) -> bool:
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("SELECT * FROM files WHERE path = ? AND file = ?", (path, file))
+            data = cursor.fetchall()
+
+            if data:
+                cursor.execute("DELETE FROM files WHERE path = ? AND file = ?", (path, file))
+                # add to the recycle bin table
+                cursor.execute("INSERT INTO recycle_files(id, file, path, time, fav) VALUES(?, ?, ? ,?, ?)", data[0])
+                return True
+            return False
+
+    def removeFolder(self, path : str) -> bool:
+
+        # get the info about the folder
+        with db_injector(self.path) as cursor:
+            cursor.execute("SELECT * FROM folders WHERE path =  ?", (path, ))
+            data = cursor.fetchall()
+
+            if data:
+                cursor.execute("DELETE FROM folders WHERE path = ? ", (path, ))
+                return True
+        return False
+
+    def removeFile(self, path: str , file : str) -> bool:
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("SELECT * FROM files WHERE path = ? AND file = ?", (path, file))
+            data = cursor.fetchall()
+
+            if data:
+                cursor.execute("DELETE FROM files WHERE path = ? AND file = ?", (path, file))
+                return True
+            return False
+
+    def open_favorites_folders(self):
+
+        with db_injector(self.path, False) as cursor:
+            cursor.execute(f"SELECT name, path, time, fav FROM folders WHERE fav = ? " ,
+                           (1, ))
+            return cursor.fetchall()
+
+
+        return []
+
+    def open_favorites_files(self):
+
+        with db_injector(self.path, False) as cursor:
+            cursor.execute(f"SELECT file, path, time, fav FROM files WHERE fav = ? ",
+                           (1,))
+            return cursor.fetchall()
+
+        return []
+
+

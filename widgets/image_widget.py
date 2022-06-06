@@ -1,7 +1,7 @@
 import os.path
 
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
-    QGridLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
+    QGridLayout, QMessageBox, QSizePolicy
 from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 import datetime
@@ -11,6 +11,7 @@ from util.File import File
 from style_sheets.image_style_sheet import style_sheet
 
 class ImageWidget(File, QWidget):
+
     def __init__(self, file, path, time, fav = False, parent = None):
         super(ImageWidget, self).__init__(file, path, time, fav)
         QWidget.__init__(self, parent)
@@ -21,7 +22,8 @@ class ImageWidget(File, QWidget):
     def initilizeUI(self):
 
         self.imageView = QLabel()
-        self.imageView.setFixedSize(QSize(250, 220))
+        self.imageView.setFixedSize(QSize(200, 180))
+        self.imageView.setContentsMargins(0, 0, 0, 0)
         try:
             self.imageView.setPixmap(QPixmap(self.file).scaled(
                 self.imageView.size(), Qt.KeepAspectRatioByExpanding, Qt.FastTransformation))
@@ -42,7 +44,7 @@ class ImageWidget(File, QWidget):
 
         # create the grid
         self.grid = QGridLayout()
-        # self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setContentsMargins(0, 0, 0, 0)
 
         self.base = QWidget()
         self.base.setObjectName("image-base")
@@ -90,14 +92,15 @@ class ImageWidget(File, QWidget):
             self.grid.addWidget(self.time_label, 2, 2)
             self.grid.addWidget(self.size_label, 2, 1)
 
-            self.setFixedHeight(230)
+            self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum))
             self.setMaximumWidth(2000)
 
         elif index == 1:
-            self.grid.addWidget(self.imageView, 1, 0)
-            self.grid.addWidget(self.fav_button, 0, 0)
+            self.grid.addWidget(self.imageView, 0, 0, alignment=Qt.AlignCenter)
+            self.grid.addWidget(self.fav_button, 0, 0, alignment=Qt.AlignTop|Qt.AlignRight)
 
-            self.setFixedSize(QSize(250, 230))
+            self.setSizePolicy(QSizePolicy())
+            self.setFixedSize(self.imageView.size())
 
         else:
             pass
@@ -140,6 +143,10 @@ class ImageWidget(File, QWidget):
         delete_action.triggered.connect(self.delete)
         menu.addAction(delete_action)
 
+        remove_action = QAction(QIcon("img/sys/close.png"), "remove", self)
+        remove_action.triggered.connect(self.remove)
+        menu.addAction(remove_action)
+
         menu.exec_(self.mapToGlobal(event.pos()))
 
     def selected(self):
@@ -161,9 +168,6 @@ class ImageWidget(File, QWidget):
 
         return f"added on {formatted_date} {formatted_time}"
 
-    def delete(self):
-
-        pass
 
     def size(self):
 
@@ -179,3 +183,40 @@ class ImageWidget(File, QWidget):
 
         except:
             return "None"
+
+    def getName(self):
+
+        return os.path.split(self.file)[1]
+
+    def delete(self):
+
+        # ask first for confirmation
+        button = QMessageBox.warning(self, "Delete File", "Are you sure to delete\n '{}' file".format(self.getName()),
+                                     QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+
+        if button == QMessageBox.StandardButton.Yes:
+            # remove the folder to the recycle bin
+            x = self.parent.db_manager.deleteFile(self.path, self.file)
+            if x:
+                # remove from the file area folder list
+                self.parent.files.remove(self)
+                # change the mode of area
+                self.parent.changeFolderMode(self.parent.getViewIndex())
+                # delete the folder widget
+                self.deleteLater()
+
+    def remove(self):
+
+        # ask first for confirmation
+        button = QMessageBox.warning(self, "Remove File", "Are you sure to permanant remove\n '{}' file".format(self.getName()),
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        if button == QMessageBox.StandardButton.Yes:
+            # remove the folder to the recycle bin
+            x = self.parent.db_manager.removeFile(self.path)
+            if x:
+                # remove from the file area folder list
+                self.parent.folders.remove(self)
+                # delete the folder widget
+                self.deleteLater()
+

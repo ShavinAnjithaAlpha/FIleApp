@@ -1,7 +1,7 @@
 import os.path
 
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
-    QGridLayout
+    QGridLayout, QMessageBox, QSizePolicy
 from PyQt5.QtCore import Qt, QSize, QTime, QDate
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 import datetime
@@ -37,7 +37,8 @@ class FileWidget(File, QWidget):
     def initilizeUI(self):
 
         self.imageView = QLabel()
-        self.imageView.setFixedSize(QSize(150, 150))
+        self.imageView.setFixedHeight(120)
+        # self.imageView.adjustSize()
         # fill the appropriate file icon for imageView label
         self.fillIcon()
 
@@ -50,11 +51,11 @@ class FileWidget(File, QWidget):
         self.file_name_label.setWordWrap(True)
         self.file_name_label.setObjectName("name-label")
 
-        self.time_label = QLabel(self.formatTime(f"{self.time}"))
-        self.time_label.setObjectName("time-label")
-
         self.size_label = QLabel(self.size())
         self.size_label.setObjectName("size-label")
+
+        self.time_label = QLabel(self.formatTime(f"{self.time}"))
+        self.time_label.setObjectName("time-label")
 
         self.setUpFavoriteButton()
 
@@ -77,12 +78,12 @@ class FileWidget(File, QWidget):
 
         ext = self.getExtension()
         self.imageView.setPixmap(
-            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/file.png")).scaled(self.imageView.size(), Qt.KeepAspectRatio,
-                                                                              Qt.FastTransformation))
+            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/file.png")).scaledToHeight(self.imageView.height()))
 
     def setUpFavoriteButton(self):
 
         self.fav_button = QPushButton()
+        # self.fav_button.setContentsMargins(25, 25, 25, 25)
         self.fav_button.setFixedSize(QSize(30, 30))
         self.fav_button.setObjectName("fav-button")
         self.fav_button.setIconSize(QSize(25, 25))
@@ -109,24 +110,27 @@ class FileWidget(File, QWidget):
             self.grid.removeWidget(w)
 
         if index == 0:
-            self.grid.addWidget(self.imageView, 0, 0, 3, 1)
-            self.grid.addWidget(self.file_name_label, 1, 1)
-            self.grid.addWidget(self.fav_button , 0, 3)
-            self.grid.addWidget(self.time_label, 2, 2)
-            self.grid.addWidget(self.size_label, 2, 1)
+            self.grid.addWidget(self.imageView, 0, 0, alignment=Qt.AlignVCenter)
+            self.grid.addWidget(self.file_name_label, 0, 1, alignment=Qt.AlignLeft)
+            self.grid.addWidget(self.size_label, 0, 2)
+            self.grid.addWidget(self.time_label, 0, 3)
+            self.grid.addWidget(self.fav_button, 0, 4, alignment=Qt.AlignRight|Qt.AlignRight)
 
-            self.setFixedHeight(200)
+            self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum))
             self.setMaximumWidth(2000)
 
         elif index == 1:
-            self.grid.addWidget(self.fav_button, 0, 1)
-            self.grid.addWidget(self.imageView, 1, 0, 1, 2)
-            self.grid.addWidget(self.file_name_label, 2, 0, 1, 2)
+            self.size_label.hide() # hide the size label from grid view
+            self.grid.addWidget(self.fav_button, 0, 0, alignment=Qt.AlignRight)
+            self.grid.addWidget(self.imageView, 1, 0, alignment=Qt.AlignCenter)
+            self.grid.addWidget(self.file_name_label, 2, 0, alignment=Qt.AlignCenter)
 
-            self.setFixedSize(QSize(250, 330))
+            self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
 
         else:
             pass
+
+
 
 
     def filterFileName(self):
@@ -162,6 +166,10 @@ class FileWidget(File, QWidget):
         delete_action.triggered.connect(self.delete)
         menu.addAction(delete_action)
 
+        remove_action = QAction(QIcon("img/sys/close.png"), "remove", self)
+        remove_action.triggered.connect(self.remove)
+        menu.addAction(remove_action)
+
         menu.exec_(self.mapToGlobal(event.pos()))
 
     def selected(self):
@@ -183,9 +191,6 @@ class FileWidget(File, QWidget):
 
         return f"added on {formatted_date} {formatted_time}"
 
-    def delete(self):
-
-        pass
 
     def size(self):
 
@@ -205,3 +210,38 @@ class FileWidget(File, QWidget):
     def getExtension(self):
 
         return os.path.splitext(self.file)[1]
+
+    def getName(self):
+
+        return os.path.split(self.file)[1]
+
+    def delete(self):
+
+        # ask first for confirmation
+        button = QMessageBox.warning(self, "Delete File", "Are you sure to delete\n '{}' file".format(self.getName()),
+                                     QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+
+        if button == QMessageBox.StandardButton.Yes:
+            # remove the folder to the recycle bin
+            x = self.parent.db_manager.deleteFile(self.path, self.file)
+            if x:
+                # remove from the file area folder list
+                self.parent.files.remove(self)
+                # delete the folder widget
+                self.deleteLater()
+
+    def remove(self):
+
+        # ask first for confirmation
+        button = QMessageBox.warning(self, "Remove File", "Are you sure to permanant remove\n '{}' file".format(self.getName()),
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        if button == QMessageBox.StandardButton.Yes:
+            # remove the folder to the recycle bin
+            x = self.parent.db_manager.removeFile(self.path)
+            if x:
+                # remove from the file area folder list
+                self.parent.folders.remove(self)
+                # delete the folder widget
+                self.deleteLater()
+

@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
                              QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QScrollArea,
                              QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
@@ -19,10 +21,13 @@ class FileArea(QWidget):
     image_status_signal = pyqtSignal(list)
     file_status_signal = pyqtSignal(list)
 
-    def __init__(self, db_manager : db_manager ,parent = None):
+    def __init__(self, db_manager : db_manager ,parent = None, * , path = ""):
         super(FileArea, self).__init__(parent)
         # declare the attributes
+        self.db_manager = db_manager
         self.file_engine = FileEngine(db_manager, self)
+        if path:
+            self.file_engine.current_path = path
         self.folders = []
         self.files = []
         self.selected_widget = None
@@ -69,7 +74,7 @@ class FileArea(QWidget):
         main_lyt.setSpacing(0)
 
         main_lyt.addWidget(tool_bar)
-        main_lyt.addLayout(search_bar)
+        main_lyt.addLayout(search_bar, 1)
         main_lyt.addWidget(scroll_area)
         self.setLayout(main_lyt)
 
@@ -83,7 +88,8 @@ class FileArea(QWidget):
         tool_bar = QToolBar()
         tool_bar.setObjectName("file-area-tool-bar")
         tool_bar.setContentsMargins(0, 0, 0, 0)
-        tool_bar.setIconSize(QSize(50, 50))
+        # tool_bar.setIconSize(QSize(50, 50))
+        tool_bar.setMaximumHeight(220)
         tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
         tool_bar.addWidget(self.navigationBox())
@@ -170,11 +176,12 @@ class FileArea(QWidget):
 
         open_action = self.action_button("Open", QIcon("img/sys/open-folder.png"), self.openSelectFolder)
         rename_action = self.action_button("Rename", QIcon("img/sys/rename.png"), self.renameSeletedFolder)
-        delete_action = self.action_button("Delete", QIcon("img/sys/delete.png"), lambda : None)
+        delete_action = self.action_button("Delete", QIcon("img/sys/delete.png"), self.deleteSelected)
+        permant_delete_action = self.action_button("Remove", QIcon("img/sys/close.png"), self.removeSelected)
         copy_action = self.action_button("Copy", QIcon("img/sys/copy.png"), lambda : None)
         move_action = self.action_button("Move", QIcon("img/sys/forward.png"), lambda : None)
 
-        self.actions = [open_action, rename_action, delete_action, copy_action, move_action]
+        self.actions = [open_action, rename_action, delete_action, copy_action, move_action, permant_delete_action]
         [action.setDisabled(True) for action in self.actions]
 
         grid = QGridLayout()
@@ -184,6 +191,7 @@ class FileArea(QWidget):
         grid.addWidget(delete_action, 0, 2)
         grid.addWidget(copy_action, 1, 0)
         grid.addWidget(move_action, 1, 1)
+        grid.addWidget(permant_delete_action, 1, 2)
 
         gr_box.setLayout(grid)
         return gr_box
@@ -192,7 +200,7 @@ class FileArea(QWidget):
 
         button = QPushButton(text)
         button.setIcon(icon)
-        button.setIconSize(QSize(50, 50))
+        button.setIconSize(QSize(40, 40))
         button.setObjectName("action_button")
         # button.setLayoutDirection(Qt.RightToLeft)
         # set the signal slot function
@@ -219,7 +227,7 @@ class FileArea(QWidget):
 
         # create the widget
         hbox = QHBoxLayout()
-        hbox.setContentsMargins(10, 20, 10, 20)
+        hbox.setContentsMargins(0, 20, 0, 20)
 
         searchButton = QPushButton("")
         searchButton.setIcon(QIcon("img/sys/search-icon.png"))
@@ -227,11 +235,14 @@ class FileArea(QWidget):
         searchButton.pressed.connect(self.showAndHideSearchBar)
         searchButton.setObjectName("search-bar-button")
 
+
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search Anything")
         self.search_bar.setObjectName("search-bar")
         self.search_bar.resize(QSize(300, 30))
         self.search_bar.hide()
+        # set the action for search bar
+        self.search_bar.textChanged.connect(self.searchFolderFiles)
 
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(25)
@@ -244,11 +255,25 @@ class FileArea(QWidget):
         self.path_bar = PathBar(self.file_engine.getStringPath(self.file_engine.current_path), self.file_engine.current_path)
         self.path_bar.path_signal.connect(self.pathBarClicked)
 
+        # create the sort combo box
+        self.sortComboBox = QComboBox()
+        self.sortComboBox.setObjectName("sort-box")
+        for name, index in {"Name":  0, "Date added" : 1, "Size": 2}.items():
+            self.sortComboBox.addItem(name, index)
+        self.sortComboBox.currentIndexChanged.connect(self.sortWidgets)
+
+        self.reverseSortBox = QComboBox()
+        self.reverseSortBox.setObjectName("sort-box2")
+        self.reverseSortBox.addItems(["Asc", "Desc"])
+        self.reverseSortBox.currentIndexChanged.connect(self.sortWidgets)
 
         hbox.addWidget(searchButton)
         hbox.addWidget(self.search_bar)
         hbox.addWidget(self.path_bar)
         hbox.addStretch()
+        hbox.addWidget(QLabel("Sort by"))
+        hbox.addWidget(self.sortComboBox)
+        hbox.addWidget(self.reverseSortBox)
 
         return hbox
 
@@ -289,6 +314,13 @@ class FileArea(QWidget):
         if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
             self.selected_widget.rename()
 
+    def deleteSelected(self):
+
+        self.selected_widget.delete()
+
+    def removeSelected(self):
+
+        self.selected_widget.remove()
 
     def newFolder(self):
 
@@ -357,13 +389,17 @@ class FileArea(QWidget):
         for widget in self.files:
             widget.deleteLater()
 
+        for widget in self.temp_labels:
+            widget.deleteLater()
+
         self.folders.clear()
         self.files.clear()
         self.temp_labels.clear()
 
     def removeWidgetsFromGrid(self):
 
-        for widget in [*self.folders , *self.files, *self.temp_labels]:
+        [w.deleteLater() for w in self.temp_labels] # delete the temp labels
+        for widget in [*self.folders , *self.files]:
             self.grid.removeWidget(widget)
 
         self.temp_labels.clear()
@@ -446,4 +482,40 @@ class FileArea(QWidget):
     def home(self):
 
         self.openFolder(".")
+
+    def getViewIndex(self):
+
+        return self.viewChangedBox.currentIndex()
+
+    def sortWidgets(self, index):
+
+        i = self.sortComboBox.currentData()
+        reverse = self.reverseSortBox.currentIndex()
+
+        if i == 0:
+            self.folders.sort(key=lambda e: e.name, reverse=reverse)
+            self.files.sort(key=lambda e: e.getName(), reverse=reverse)
+        elif i == 1:
+            self.folders.sort(key=lambda e: e.time, reverse=reverse)
+            self.files.sort(key=lambda e: e.time, reverse=reverse)
+
+        elif i == 2:
+            self.files.sort(key=lambda e: os.stat(e.file).st_size, reverse=reverse)
+            self.folders.sort(key=lambda e : self.file_engine.db_manager.folder_count(e.path), reverse=reverse)
+        # change view
+        self.changeFolderMode(self.getViewIndex())
+
+    def searchFolderFiles(self, text: str):
+
+        for widget in self.folders:
+            if text.lower() in widget.name.lower():
+                widget.show()
+            else:
+                widget.hide()
+
+        for widget in self.files:
+            if text.lower() in widget.file.lower():
+                widget.show()
+            else:
+                widget.hide()
 

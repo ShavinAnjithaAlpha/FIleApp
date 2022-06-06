@@ -1,28 +1,28 @@
 
 style_sheet = """
-            
+
             QWidget {
-                background-color : rgb(25, 25, 25);
+                background-color : rgb(23, 23, 23);
                 padding : 10px;
-                color : rgb(220, 220, 220);
+                color : rgba(250, 250, 250, 0.87);
                 font-family : Calibri;
                 font-size : 22px;
                 font-weight : 300}
                 
             QPushButton {
-                    background-color : rgb(220, 70, 10);
+                    background-color : rgb(240, 70, 6);
                     color : black;
                     font-size : 25px;
                     padding : 7px 8px;
                     margin : 10px;
-                    border-radius : 5px;}
+                    border-radius : 6px;}
                     
             QPushButton:hover {
-                    background-color : rgb(250, 50, 0);
+                    background-color :rgb(255, 100, 20);
                     border-radius : 7px;}
                     
             QLabel {
-                color : rgb(220, 220, 220);
+                color : rgba(250, 250, 250, 0.87);
                 font-size : 22px;
                 font-family : Calibri;
                 margin : 10px;}
@@ -42,14 +42,17 @@ style_sheet = """
                     padding : 10px;}
                 
             QScrollArea {
-                    background-color : rgb(25, 25, 25);
+                    background-color : rgb(20, 20, 20);
                     border : none;
                     margin : 0px;}
                     
             QTabBar::tab {background : rgb(70,70, 70);
                         border : none;
-                        padding : 10px 30px;
-                        border-radius : 10px;}
+                        padding : 5px 30px;
+                        border-radius : 10px;
+                        min-width : 100px;
+                        margin-right : 5px;
+                        max-height : 30px;}
                                                 
             QTabBar::tab:hover {background-color : rgb(50, 50, 50)}
                 
@@ -92,7 +95,7 @@ style_sheet = """
                                                 border : none}
                                                 
             QToolBar {
-                    background-color : rgb(15, 15, 15);
+                    background-color : rgb(10, 10, 15);
                     padding : 15px;
                     margin-bottom : 10px;}
                     
@@ -107,6 +110,7 @@ style_sheet = """
                     background-color: rgb(40, 40, 40);}
             
             QMenu {
+                background : rgb(20, 20, 20);
                 border-radius : 20px;
                 padding : 10px;
             }
@@ -214,6 +218,25 @@ style_sheet = """
                     color : white;
                     padding : 12px;}
             QPushButton#search-bar-button:hover {background-color : rgba(50, 50, 50, 0.5)}    
-                    
-        
+                        
+            QMessageBox {min-width : 500px;}
+            
+            QMessageBox QPushButton {min-width : 65px;}
+            QMessageBox QLabel {color : rgba(255, 255, 255, 0.80);
+                                font-size : 21px;}
+            
+            QToolBar::handle {
+                    border-color : red;
+                    image: url(img/sys/more.png);
+                    width : 30px;
+                    height : 40px;
+                }
+                
+            QComboBox#sort-box {border : 1px solid rgba(255, 255, 255, 0.3);
+                                border-radius : 5px;
+                                background-color : rgb(25, 25, 25);}
+            QComboBox#sort-box2 {border : 0px solid rgba(255, 255, 255, 0.3);
+                                border-radius : 5px;
+                                background-color : rgb(25, 25, 25);}
+            
             """
