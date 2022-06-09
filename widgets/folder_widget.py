@@ -8,6 +8,37 @@ from util.Folder import Folder
 from style_sheets.folder_style_sheet import style_sheet
 
 class FolderWidget(Folder, QWidget):
+
+    FOLDER_TYPES = {"Normal": "N", "Image Folder": "I", "Video Folder": "V", "Document Folder": "D",
+                    "System Folder": "S", "Red": "RED", "Green": "GREEN", "Blue": "BLUE"}
+
+    FOLDER_MENU_ICONS = {
+        "Red": "img/sys/red_oval.png",
+        "Green": "img/sys/green_oval.png",
+        "Blue": "img/sys/blue_oval.png",
+        "Orange": "img/sys/orange_oval.png",
+        "Yellow": "img/sys/yellow_oval.png",
+        "Image Folder": "img/sys/image_folder.png",
+        "Video Folder": "img/sys/video_folder.png",
+        "Document Folder": "img/sys/doc_folder.png",
+        "Normal Folder": "img/sys/folder (1).png",
+        "System Folder" : "img/sys/system.png"
+    }
+
+    FOLDER_ICONS = {
+        "N" : "img/sys/folder (3).png",
+        "I" : "img/sys/image_folder.png",
+        "V" : "img/sys/video_folder.png",
+        "D" : "img/sys/doc_folder.png",
+        "S" : "img/sys/system.png",
+        "RED" : "img/sys/video_folder.png",
+        "GREEN" : "img/sys/green_folder.png",
+        "BLUE" : "img/sys/blue_folder.png",
+        "ORANGE" : "img/sys/folder (6).png",
+        "YELLOW" : "img/sys/yellow_folder.png"
+    }
+
+
     def __init__(self, name, path, time, fav, type = 'N' , pw = None ,parent = None):
         super(FolderWidget, self).__init__(name, path, time, fav)
         QWidget.__init__(self, parent)
@@ -115,13 +146,9 @@ class FolderWidget(Folder, QWidget):
         typeChangedAction.setIcon(QIcon("img/sys/widget.png"))
         folderMenu.addMenu(typeChangedAction)
 
-        for color, icon in {"Red" : QIcon("img/sys/circle.png"), "Green" : QIcon("../img/sys/circle (1).png"),
-                            "Blue" : QIcon("img/sys/circle (1).png"), "Orange" : QIcon("img/sys/circle (2).png"), "Yellow": QIcon(),
-                            "Image Folder": QIcon("img/sys/image_folder.png"),
-                            "Video Folder" : QIcon("img/sys/video_folder.png"),
-                            "Document Folder" : QIcon("img/sys/doc_folder.png"),
-                            "Normal Folder": QIcon("img/sys/folder (1).png")}.items():
-            action = QAction(icon, color, self)
+        for color, icon in self.FOLDER_MENU_ICONS.items():
+            action = QAction(QIcon(icon), color, self)
+            action.triggered.connect(lambda e, x = color : self.changeColor(x)) # add the event slots to action
             typeChangedAction.addAction(action)
 
         lock_action = QAction(QIcon("img/sys/lock.png"), "Lock", self)
@@ -231,24 +258,17 @@ class FolderWidget(Folder, QWidget):
 
     def setFolderIcon(self, type : str):
 
-        if type == "I":
-            icon = QPixmap("img/sys/image_folder.png").scaledToHeight(self.icon_label.height())
-        elif type == "V":
-            icon = QPixmap("img/sys/video_folder.png").scaledToHeight(self.icon_label.height())
-        elif type == "D":
-            icon = QPixmap("img/sys/doc_folder.png").scaledToHeight(self.icon_label.height())
-        elif type == "S":
-            icon = QPixmap("img/sys/system.png").scaledToHeight(self.icon_label.height())
-        elif type == "GREEN":
-            icon = QPixmap("img/sys/green_folder.png").scaledToHeight(self.icon_label.height())
-        elif type == "YELLOW":
-            icon = QPixmap("img/sys/yellow_folder.png").scaledToHeight(self.icon_label.height())
-        elif type == "BLUE":
-            icon = QPixmap("img/sys/blue_folder.png").scaledToHeight(self.icon_label.height())
-        else:
-            icon = QPixmap("img/sys/folder (1).png").scaledToHeight(self.icon_label.height())
+        self.icon_label.setPixmap(QPixmap(self.FOLDER_ICONS.get(type, "img/sys/folder (3).png"))
+                                  .scaledToHeight(self.icon_label.height()))
 
-        self.icon_label.setPixmap(icon)
+    def changeColor(self, type : str):
+
+        # get color code
+        code = self.FOLDER_TYPES.get(type, "N")
+        # call to the db manager and save the changes
+        self.parent.db_manager.change_folder_color(self.path, code)
+        # change the current folder icon
+        self.setFolderIcon(code)
 
 
 if __name__ == "__main__":

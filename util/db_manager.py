@@ -41,7 +41,8 @@ class db_manager:
                                         path TEXT NOT NULL UNIQUE ,
                                         time TIMESTAMP NOT NULL ,
                                         fav BOOLEAN NOT NULL,
-                                        type TEXT NOT NULL 'N')"""
+                                        type TEXT NOT NULL 'N',
+                                        pw TEXT)"""
             )
 
             cursor.execute("""
@@ -294,4 +295,8 @@ class db_manager:
 
         return []
 
+    def change_folder_color(self, path : str,type : str):
+
+        with db_injector(self.path) as cursor:
+            cursor.execute("UPDATE folders SET type = ? WHERE path = ?", (type, path))
 

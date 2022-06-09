@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
                              QActionGroup, QGraphicsEffect, QGraphicsDropShadowEffect)
 from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal, QPropertyAnimation
-from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap
+from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap, QDragEnterEvent, QDropEvent
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
 
@@ -373,41 +373,38 @@ class FileArea(QWidget):
         if ok:
             file_widgets = self.file_engine.add_files(files)
 
-            count = len([*self.files, *self.folders])
-            for w in file_widgets:
-                self.files.append(w)
-                w.changeView(self.viewChangedBox.currentIndex())
+    def populateFileWidgets(self, file_widgets : list):
 
-            # add to the grid view this files
-            if self.viewChangedBox.currentIndex() == 0:
-                for i, w in enumerate(file_widgets):
-                    self.grid.addWidget(w, i + count, 0)
+        count = len([*self.files, *self.folders])
+        for w in file_widgets:
+            self.files.append(w)
+            w.changeView(self.viewChangedBox.currentIndex())
 
-            elif self.viewChangedBox.currentIndex() == 1:
-                [w.deleteLater() for w in self.temp_labels]
-                self.temp_labels.clear()
+        # add to the grid view this files
+        if self.viewChangedBox.currentIndex() == 0:
+            for i, w in enumerate(file_widgets):
+                self.grid.addWidget(w, i + count, 0)
 
-                for i, w in enumerate(file_widgets):
-                    self.grid.addWidget(w,  (i + count)// 6, (i + count)%6)
+        elif self.viewChangedBox.currentIndex() == 1:
+            [w.deleteLater() for w in self.temp_labels]
+            self.temp_labels.clear()
 
-                x = len([*self.folders, *self.files]) - 1
-                if x % 6 != 0:
-                    while x % 6 != 0:
-                        x += 1
-                        label = QLabel()
-                        self.temp_labels.append(label)
-                        self.grid.addWidget(label, x // 6, x % 6)
+            for i, w in enumerate(file_widgets):
+                self.grid.addWidget(w, (i + count) // 6, (i + count) % 6)
+
+            x = len([*self.folders, *self.files]) - 1
+            if x % 6 != 0:
+                while x % 6 != 0:
+                    x += 1
+                    label = QLabel()
+                    self.temp_labels.append(label)
+                    self.grid.addWidget(label, x // 6, x % 6)
 
     def cleanArea(self):
 
-        for widget in self.folders:
-            widget.deleteLater()
+        for widget in [*self.folders, *self.files, *self.temp_labels]:
+            widget.deleteLater() # delete the all widgets in the file area
 
-        for widget in self.files:
-            widget.deleteLater()
-
-        for widget in self.temp_labels:
-            widget.deleteLater()
 
         self.folders.clear()
         self.files.clear()
@@ -546,4 +543,27 @@ class FileArea(QWidget):
                 image_files.append(w.file)
 
         self.parent.openImages(image_files, image_files.index(current_file))
+
+    def dragEnterEvent(self, event : QDragEnterEvent) -> None:
+
+        if event.mimeData().hasUrls():
+            event.accept() # accept the dragged data
+            event.setDropAction(Qt.CopyAction) # mark as the copy action
+            return
+        event.ignore()
+
+    def dropEvent(self, event : QDropEvent) -> None:
+
+        if event.mimeData().hasUrls():
+            event.accept()
+            # get the urls and convert it to the local file paths
+            local_files = list(map(lambda e : e.toLocalFile() , event.mimeData().urls()))
+            # call to the file engine add file method
+            file_widgets = self.file_engine.add_files(local_files)
+            # place widgets in the file area
+            self.populateFileWidgets(file_widgets)
+            return
+        event.ignore()
+
+
 
