@@ -5,12 +5,15 @@ The app consists most basic features that will found in any file manager app suc
 
 Here some ScreenShots of the FileApp.
 
-![Annotation 2022-05-23 223516](https://user-images.githubusercontent.com/85817726/171467392-0496025b-f68e-4ac9-b824-42e5c709e8b4.png)
-![Annotation 2022-05-26 173028](https://user-images.githubusercontent.com/85817726/171467403-751ee09e-e691-437a-9d29-9436651bebd2.png)
-![Annotation 2022-05-26 173147](https://user-images.githubusercontent.com/85817726/171467417-36c40c1f-72b4-42b8-b659-c0226cfa3555.png)
-![Annotation 2022-05-26 173258](https://user-images.githubusercontent.com/85817726/171467427-820593f3-80eb-49b5-8ab2-4568b54f2e7c.png)
-![Annotation 2022-06-01 230819](https://user-images.githubusercontent.com/85817726/171468451-4ac01bbe-e199-469e-a131-aa87e226ba4d.png)
-![Annotation 2022-06-01 230837](https://user-images.githubusercontent.com/85817726/171468460-22d7fac2-3aa8-4bee-be80-5d33c73aee76.png)
-![Annotation 2022-06-01 230910](https://user-images.githubusercontent.com/85817726/171468469-231d6c1f-0f70-4d13-884d-1d20e5fb07fd.png)
-![Annotation 2022-06-01 230959](https://user-images.githubusercontent.com/85817726/171468481-0ca8b92f-8d29-41cb-bbab-2b13fd441997.png)
-![Annotation 2022-06-01 231025](https://user-images.githubusercontent.com/85817726/171468509-b4b74246-c77f-4ca4-b14d-e1a8e5bcc7af.png)
+![Annotation 2022-06-14 190131](https://user-images.githubusercontent.com/85817726/173589649-c1dddd20-88e1-411e-8536-cfd8ba21c3a9.png)
+![Annotation 2022-06-14 185519](https://user-images.githubusercontent.com/85817726/173589665-49ee47e3-6d87-45af-9e85-118fb086e41b.png)
+![Annotation 2022-06-14 185552](https://user-images.githubusercontent.com/85817726/173589672-bef76808-c3e2-49fd-8811-1349fb8e4b48.png)
+![Annotation 2022-06-14 185625](https://user-images.githubusercontent.com/85817726/173589676-ea3f227e-1c75-4643-a20f-cedda1dd22a4.png)
+![Annotation 2022-06-14 185643](https://user-images.githubusercontent.com/85817726/173589680-066ad8de-8c62-400b-975a-014ea34a37f2.png)
+![Annotation 2022-06-14 185701](https://user-images.githubusercontent.com/85817726/173589683-bb1a924e-1a4e-471a-b6f4-bcc82c1c34d3.png)
+![Annotation 2022-06-14 185731](https://user-images.githubusercontent.com/85817726/173589686-09d022cf-9683-48ed-aea0-6bb5680452a2.png)
+![Annotation 2022-06-14 185801](https://user-images.githubusercontent.com/85817726/173589693-104a1118-7e1a-4602-ba53-72030ec65719.png)
+![Annotation 2022-06-14 185907](https://user-images.githubusercontent.com/85817726/173589711-c90c6926-8edb-4337-8d3d-99245af53812.png)
+![Annotation 2022-06-14 190014](https://user-images.githubusercontent.com/85817726/173589718-ce0f6dc0-677b-460f-8d74-51dc52ad035a.png)
+![Annotation 2022-06-14 190056](https://user-images.githubusercontent.com/85817726/173589721-8bdb02d8-8c5e-4439-9ab5-35ec17d13800.png)
+
