@@ -117,6 +117,11 @@ class ImageWidget(File, QWidget):
         self.parent.selectFile(self)
         event.accept()
 
+    def mouseDoubleClickEvent(self, event : QMouseEvent) -> None:
+
+        event.accept()
+        self.image_open_signal.emit(self.file)
+
     def contextMenuEvent(self, event : QContextMenuEvent) -> None:
 
         # create the cntext menu

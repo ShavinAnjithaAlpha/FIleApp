@@ -1,16 +1,18 @@
 import os.path
 
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QMenu, \
     QGridLayout, QMessageBox, QSizePolicy
-from PyQt5.QtCore import Qt, QSize, QTime, QDate
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtCore import Qt, QSize, QTime, QDate, pyqtSignal
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
-import datetime
 
 from util.File import File
 
 from style_sheets.image_style_sheet import style_sheet
 
 class FileWidget(File, QWidget):
+
+    video_play_singal = pyqtSignal(str)
 
     MAX_FILE_NAME_LENGTH = 20
 
@@ -24,7 +26,9 @@ class FileWidget(File, QWidget):
         ".zip": "img/sys/zip (1).png",
         ".rar": "img/sys/rar.png",
         ".py": "img/sys/python.png",
-        ".java": "img/sys/java.png"
+        ".java": "img/sys/java.png",
+        ".mp4" : "img/sys/video_folder.png",
+        ".mkv" : "img/sys/video_folder.png"
     }
 
     def __init__(self, file, path, time, fav = False, parent = None):
@@ -153,7 +157,7 @@ class FileWidget(File, QWidget):
 
         # create the actions
         open_action = QAction(QIcon("img/sys/photo.png"),"Open", self)
-        open_action.triggered.connect(lambda : print("opened"))
+        open_action.triggered.connect(self.openFile)
         menu.addAction(open_action)
 
         menu.addSeparator()
@@ -248,4 +252,21 @@ class FileWidget(File, QWidget):
                 self.parent.folders.remove(self)
                 # delete the folder widget
                 self.deleteLater()
+
+    def openFile(self):
+
+        if self.isVideoFile():
+            self.playVideo()
+        return
+
+    def playVideo(self):
+
+        # call to the video playing signal and emit signal
+        self.video_play_singal.emit(self.file)
+
+    def isVideoFile(self) -> bool:
+
+        return self.getExtension() in [".mp4", ".mpeg", ".vob", ".mkv"]
+
+
 

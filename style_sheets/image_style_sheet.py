@@ -21,7 +21,7 @@ style_sheet = """
                                         border : none;}
                                         
             QLabel#name-label {color : rgba(250, 250, 250, 0.87);
-                                        font-size : 22px;
+                                        font-size : 24px;
                                         font-family : Calibri;}
                         
             QPushButton#fav-button {background : none;

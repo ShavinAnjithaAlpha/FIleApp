@@ -46,7 +46,7 @@ class WidgetFactory:
 
         icon_label = QLabel()
         icon_label.setFixedSize(QSize(220,170))
-        icon_label.setPixmap(QPixmap("img/sys/folder (2).png").scaled(icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        icon_label.setPixmap(QPixmap("img/sys/folder (3).png").scaled(icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         form.addRow(title_label)
         form.addRow(icon_label)

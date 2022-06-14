@@ -1,11 +1,9 @@
 import os
 
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QScrollArea,
-                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
-                             QActionGroup, QGraphicsEffect, QGraphicsDropShadowEffect)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal, QPropertyAnimation
-from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QLabel, QScrollArea,
+                            QComboBox, QLineEdit, QGraphicsDropShadowEffect)
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QIcon
 
 from util.db_manager import db_manager
 
@@ -77,7 +75,7 @@ class FavoritePanel(FileArea):
         hbox.setContentsMargins(0, 20, 0, 20)
 
         searchButton = QPushButton("")
-        searchButton.setIcon(QIcon("img/sys/search-icon.png"))
+        searchButton.setIcon(QIcon("img/sys/search.png"))
         searchButton.setIconSize(QSize(40, 40))
         searchButton.pressed.connect(self.showAndHideSearchBar)
         searchButton.setObjectName("search-bar-button")
@@ -85,17 +83,12 @@ class FavoritePanel(FileArea):
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search Anything")
         self.search_bar.setObjectName("search-bar")
-        self.search_bar.resize(QSize(300, 30))
+        self.search_bar.resize(QSize(450, 30))
         self.search_bar.hide()
         # implement the search method
         self.search_bar.textChanged.connect(self.searchFolderFiles)
 
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(25)
-        shadow.setColor(QColor(40, 40, 40))
-        shadow.setXOffset(-10)
-        # set the shadow
-        self.search_bar.setGraphicsEffect(shadow)
+
         # create the sort combo box
         self.sortComboBox = QComboBox()
         self.sortComboBox.setObjectName("sort-box")

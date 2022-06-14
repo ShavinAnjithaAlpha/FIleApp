@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QLineEdit
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 
 from style_sheets.path_bar_style_sheet import style_sheet
@@ -54,7 +54,7 @@ class PathBar(QWidget):
         base.setLayout(self.hbox)
 
         hbox2 = QHBoxLayout()
-        # h box2.setContentsMargins(0, 0, 0, 0)
+        hbox2.setContentsMargins(0, 0, 0, 0)
         hbox2.addWidget(base)
 
         self.setLayout(hbox2)
@@ -89,9 +89,12 @@ class PathBar(QWidget):
         button = QPushButton("Home")
         button.setObjectName("path-button")
         button.pressed.connect(lambda: self.emitPath("Home"))
+        label = QLabel(">")
         # add to the list
         self.button_list.append(button)
+        self.button_list.append(label)
         self.hbox.addWidget(button)
+        self.hbox.addWidget(label)
 
         if self.paths:
             for item in self.paths:
@@ -99,7 +102,10 @@ class PathBar(QWidget):
                     button = QPushButton(item)
                     button.setObjectName("path-button")
                     button.pressed.connect(lambda e=button.text(): self.emitPath(e))
+                    label = QLabel(">")
                     # add to the list
                     self.button_list.append(button)
+                    self.button_list.append(label)
                     self.hbox.addWidget(button)
+                    self.hbox.addWidget(label)
 

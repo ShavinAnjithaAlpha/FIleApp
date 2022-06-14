@@ -1,8 +1,11 @@
 style_sheet = """
         
-        QWidget {margin : 20px;
-                background : none;
-                border : 1px solid rgb(50, 50, 50)}
+        QWidget , QLineEdit {margin : 20px;
+                background : rgba(0, 0, 0, 0.0);
+                border : 1px solid rgb(50, 50, 50);
+                border-left : none;
+                padding : 5px;
+                }
         
         QWidget#base {
                 background : none;
@@ -11,12 +14,22 @@ style_sheet = """
                 
                 }
                 
+        QLabel {
+        
+            background : none;
+            border : none;
+            color : white;
+            padding : 2px;
+            margin : 0px;
+        }
+                
         QPushButton#path-button {background-color : rgb(40, 40, 40);
                                 color : rgb(200, 200, 200);
-                                border-right : 1px solid gray;
+                                border-right : 1px solid rgb(40, 40, 40);
                                 font-size : 20px;
                                 margin : 0px;
-                                border-radius : 0px;}
+                                border-radius : 0px;
+                                padding : 5px 10px 5px 10px;}
                                 
         QPushButton#path-button:hover {background-color : rgb(50, 50, 50);}
         

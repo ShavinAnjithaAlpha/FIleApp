@@ -108,9 +108,45 @@ style_sheet = """
                     
             QToolBar QToolButton:hover {
                     background-color: rgb(40, 40, 40);}
+                    
+            
+            
+            
+            QHeaderView::section {
+                background-color: rgba(60, 60, 60, 0.5);
+                color: white;
+                font-size : 16px;
+                padding: 6px;
+                border-right: 1px solid #6c6c6c;
+            }
+            
+            QHeaderView::section:checked
+            {
+                background-color: red;
+            }
+            
+            QHeaderView::section:hover {
+                    background-color : rgb(70, 70, 70);
+            }
+            
+            /* style the sort indicator */
+            QHeaderView::down-arrow {
+                image: url(img/sys/up_arrow.png);
+            }
+            
+            QHeaderView::up-arrow {
+                image: url(img/sys/up_arrow.png);
+            }
+            
+            
+            QMenuBar {
+                background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1,
+                                                  stop:0 lightgray, stop:1 darkgray);
+                spacing: 3px; /* spacing between menu bar items */
+            }
             
             QMenu {
-                background : rgb(20, 20, 20);
+                background-color : rgba(20, 20, 20, 0.5);
                 border-radius : 20px;
                 padding : 10px;
             }
@@ -118,21 +154,72 @@ style_sheet = """
             QMenu::panel {border-radius : 15px;}
                
             QMenu::item {
+                    background-color : rgba(20, 20, 20, 0.5);
                     border-radius : 2px;
                     margin : 0px;
-                    padding : 10px;
+                    padding : 10px 10px 10px 10px;
                     min-width : 250px;
                     font-size : 20px;}
                     
-            QMenu QIcon {margin : 10px;}
+            QMenu::icon {margin : 10px;}
                     
             QMenu::item::selected {
                     background-color : QLinearGradient(x1 : 0, y1 : 0, x2 : 1, y2 : 0, stop : 0.0 rgb(40, 40, 40), stop : 1.0 rgb(60, 60, 60) );
                     color : white;
-                    border-bottom : 1px solid rgb(100, 100, 100);
-                    padding : 10px;
+                  
              }
              
+            QMenu::separator {
+                height: 2px;
+                background: rgba(70, 70, 70, 0.5);
+                margin-left: 0px;
+                margin-right: 0px;
+            }
+            
+            QMenu::indicator {
+                width: 13px;
+                height: 13px;
+            }
+            
+            
+            
+            QTreeView {
+                show-decoration-selected: 1;
+                border : none;
+                border-top : 1px solid rgba(50, 50, 50, 0.5)
+            }
+            
+            QTreeView::item {
+                padding : 3px 5px;
+                border: 1px solid rgba(70, 70, 70, 0.5);
+                border-top-color: transparent;
+                border-bottom-color: transparent;
+            }
+            
+            QTreeView::item:hover {
+                background: rgba(70, 70, 70, 0.5);
+                border: 1px solid rgba(80, 80, 80, 0.5);
+            }
+            
+            QTreeView::item:selected {
+                background-color : rgba(220, 0, 250, 0.6);
+                border: 1px solid rgba(80, 80, 80, 0.5);
+            }
+            
+            QTreeView::item:selected:active{
+                background-color : rgba(20, 100, 200, 0.6);
+            }
+            
+            QTreeView::item:selected:!active {
+                background: rgba(50, 50, 50, 0.5);
+            }
+            
+            
+            
+            
+            
+            
+            
             QComboBox {font-size : 18px;
                         background-color : rgb(40, 40, 40);
                         padding : 12px;
@@ -153,6 +240,9 @@ style_sheet = """
              
            
             
+            
+            
+            
             QLineEdit {padding : 10px 15px;
                         background-color : rgb(60, 60, 60);
                         border-radius : 8px;
@@ -164,6 +254,9 @@ style_sheet = """
                     border : none;
                     border-left : 3px solid rgb(240, 50 , 5)}            
                     
+            
+            
+            
             QInputDialog QPushButton {
                             width : 130px;
                             padding : 7px;
@@ -189,11 +282,17 @@ style_sheet = """
                                         border-left : 2px solid rgb(120, 120, 120);
                                         border-radius : 7px;}
                             
-            QLineEdit#search-bar {background-color : rgb(80, 80, 80);
-                                    padding : 10px;
-                                    font-size  : 25px;
-                                    border-radius : 18px;
+            QLineEdit#search-bar {background-color : rgb(60, 60, 60);
+                                    padding : 5px 10px;
+                                    font-size  : 20px;
+                                    border-radius : 8px;
                                     border : none;}
+            
+            QLineEdit#search-bar:focus , QLineEdit#search-bar:hover {
+                background-color : rgb(70, 70, 70);
+                border : 1px solid rgb(100, 100, 100);
+            
+            }
                                     
             
             QGroupBox {
@@ -238,5 +337,14 @@ style_sheet = """
             QComboBox#sort-box2 {border : 0px solid rgba(255, 255, 255, 0.3);
                                 border-radius : 5px;
                                 background-color : rgb(25, 25, 25);}
+                                
+            
+            QPushButton#tool-panel-hide-button {
+                    background : rgb(40, 40, 40);
+                    padding : 8px;
+                    border-radius: 18px;}
+            
+            QPushButton#tool-panel-hide-button:hover {
+                    background-color : rgb(50, 50, 50);}
             
             """

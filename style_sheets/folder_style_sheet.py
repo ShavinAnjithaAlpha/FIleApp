@@ -23,7 +23,7 @@ style_sheet = """
                 
             QLabel#name-label {
                             color : rgba(255, 255, 255, 0.87);
-                            font-size : 28px;
+                            font-size : 24px;
                             font-family : Calibri;
                             font-weight : normal;}
                             

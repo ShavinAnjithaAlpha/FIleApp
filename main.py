@@ -1,13 +1,15 @@
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QToolBar, QComboBox)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime
-from PyQt5.QtGui import QFont, QColor, QIcon
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QDockWidget, QTabWidget,
+                             QTabBar, QToolBar, QDesktopWidget, QScrollArea, QLabel)
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QIcon
 
 from widgets.file_area import FileArea
 from widgets.status_widget_factory import WidgetFactory
 from widgets.favorite_panel import FavoritePanel
+from widgets.folder_tree_widget import FolderTreeWidget
 
 from apps.photo_viewer import PhotoViewer
+from apps.video_player import VideoPlayer
 
 from util.db_manager import db_manager
 
@@ -51,18 +53,40 @@ class FileApp(QMainWindow):
         self.dock.setFloating(False)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
 
+
+        # create the scroll area for dock widget
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+
         # create the vbox for the dock widget
         self.dock_vbox = QVBoxLayout()
         self.dock_vbox.setContentsMargins(0, 0, 0, 0)
+        self.dock_vbox.setSpacing(0)
+
         widget = QWidget()
         widget.setContentsMargins(0, 0, 0, 0)
         widget.setLayout(self.dock_vbox)
-        self.dock.setWidget(widget)
+        scroll_area.setWidget(widget)
+        self.dock.setWidget(scroll_area)
+
+        self.addTreeView() # set up the tree view in the dock widget area
+
+    def addTreeView(self):
+
+        self.tree = FolderTreeWidget(self.db_manager)
+        self.docks_widgets.append(self.tree)
+        self.dock_vbox.addWidget(QLabel())
+        self.dock_vbox.insertWidget(1, self.tree)
+
+        self.tree.doubleClicked.connect(self.openFolder)
 
 
     def setUpToolBar(self):
 
-        # create the tool bar
+        # create the toolbar
         self.tool_bar = QToolBar("Tool Bar")
         self.tool_bar.setIconSize(QSize(20, 20))
         self.tool_bar.setFixedHeight(int(self.full_size.height() * 0.09))
@@ -144,17 +168,17 @@ class FileApp(QMainWindow):
         }
 
         status_widget = WidgetFactory.FolderStatusWidget(data[1], info)
-        if self.docks_widgets == []:
-            self.dock_vbox.addWidget(status_widget)
+        if len(self.docks_widgets) == 1:
+            self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
             self.docks_widgets.append(status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[0])
-            self.docks_widgets[0].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[1])
+            self.docks_widgets[1].deleteLater()
             # update the list
-            self.docks_widgets.insert(0, status_widget)
+            self.docks_widgets.insert(1, status_widget)
             self.dock_vbox.insertWidget(0, status_widget)
 
     def createImageStatus(self, data : list):
@@ -168,18 +192,18 @@ class FileApp(QMainWindow):
 
         status_widget = WidgetFactory.ImageStatusWidget(info)
 
-        if self.docks_widgets == []:
-            self.dock_vbox.addWidget(status_widget)
+        if len(self.docks_widgets) == 1:
+            self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
             self.docks_widgets.append(status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[0])
-            self.docks_widgets[0].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[1])
+            self.docks_widgets[1].deleteLater()
             # update the list
             self.docks_widgets.insert(0, status_widget)
-            self.dock_vbox.insertWidget(0, status_widget)
+            self.dock_vbox.insertWidget(1, status_widget)
 
     def createFileStatus(self, data : list):
 
@@ -191,18 +215,18 @@ class FileApp(QMainWindow):
         }
 
         status_widget = WidgetFactory.FileStatusWidget(info)
-        if self.docks_widgets == []:
-            self.dock_vbox.addWidget(status_widget)
+        if len(self.docks_widgets) == 1:
+            self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
             self.docks_widgets.append(status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[0])
-            self.docks_widgets[0].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[1])
+            self.docks_widgets[1].deleteLater()
             # update the list
             self.docks_widgets.insert(0, status_widget)
-            self.dock_vbox.insertWidget(0, status_widget)
+            self.dock_vbox.insertWidget(1, status_widget)
 
     def openRecycleBin(self):
 
@@ -240,7 +264,21 @@ class FileApp(QMainWindow):
 
         self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
 
+    def openVideo(self, video_list : list[str], index : int):
 
+        # create the photo viewer widget
+        videoViewer = VideoPlayer(video_list, index)
+
+        self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, videoViewer,
+                               "Image Viewer")
+
+        self.tab_bar.setCurrentIndex(self.tab_bar.tabBar().count() - 2)
+
+    def openFolder(self, index):
+
+        path = self.tree.model.item(index.row(), 0).item[1]
+        if self.current_file_area:
+            self.current_file_area.openFolder(path)
 
 if __name__ == "__main__":
     app = QApplication([])

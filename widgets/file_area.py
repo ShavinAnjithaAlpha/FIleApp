@@ -1,11 +1,12 @@
 import os
 
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QDockWidget, QTabWidget, QTabBar, QDesktopWidget, QScrollArea,
-                             QInputDialog, QAction, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
-                             QActionGroup, QGraphicsEffect, QGraphicsDropShadowEffect)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal, QPropertyAnimation
-from PyQt5.QtGui import QFont, QColor, QIcon, QCursor, QPixmap, QDragEnterEvent, QDropEvent
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+                             QPushButton, QLabel, QScrollArea,
+                             QInputDialog, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
+                             QGraphicsEffect, QGraphicsDropShadowEffect)
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QPropertyAnimation, QEasingCurve
+from PyQt5.QtGui import QColor, QIcon, QDragEnterEvent, QDropEvent
+
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
 
@@ -90,28 +91,28 @@ class FileArea(QWidget):
     def setUpToolBar(self):
 
         # create the grid
-        tool_bar = QToolBar()
-        tool_bar.setObjectName("file-area-tool-bar")
-        tool_bar.setContentsMargins(0, 0, 0, 0)
+        self.tool_bar = QToolBar()
+        self.tool_bar.setObjectName("file-area-tool-bar")
+        self.tool_bar.setContentsMargins(0, 0, 0, 0)
         # tool_bar.setIconSize(QSize(50, 50))
-        tool_bar.setMaximumHeight(220)
-        tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.tool_bar.setMaximumHeight(220)
+        self.tool_bar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        tool_bar.addWidget(self.navigationBox())
+        self.tool_bar.addWidget(self.navigationBox())
 
-        tool_bar.addSeparator()
+        self.tool_bar.addSeparator()
 
-        tool_bar.addWidget(self.newBox())
+        self.tool_bar.addWidget(self.newBox())
 
-        tool_bar.addSeparator()
+        self.tool_bar.addSeparator()
 
-        tool_bar.addWidget(self.viewBox())
+        self.tool_bar.addWidget(self.viewBox())
 
-        tool_bar.addSeparator()
+        self.tool_bar.addSeparator()
 
-        tool_bar.addWidget(self.actionBox())
+        self.tool_bar.addWidget(self.actionBox())
 
-        return tool_bar
+        return self.tool_bar
 
     def navigationBox(self):
          # create the group box
@@ -147,7 +148,7 @@ class FileArea(QWidget):
         self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View", 1)
         self.viewChangedBox.currentIndexChanged.connect(self.changeFolderMode)
 
-        refresh_button = self.action_button("", QIcon("img/sys/circle (2).png"), self.refresh)
+        refresh_button = self.action_button("", QIcon("img/sys/refresh-arrow.png"), self.refresh)
 
         grid = QGridLayout()
         grid.addWidget(QLabel("Item View"), 0, 0)
@@ -217,17 +218,38 @@ class FileArea(QWidget):
 
     def showAndHideSearchBar(self):
 
-        if self.search_bar.isVisible():
-            self.search_bar.hide()
+        self.searchBarAnimation = QPropertyAnimation(self.search_bar, b"maximumWidth")
+        self.searchBarAnimation.setStartValue(self.search_bar.width())
+        self.searchBarAnimation.setDuration(250)
+        self.searchBarAnimation.setEasingCurve(QEasingCurve.OutCubic)
+
+        if self.search_bar.width() <= 10:
+            self.searchBarAnimation.setEndValue(450)
         else:
-            self.search_bar.show()
+            self.searchBarAnimation.setEndValue(0)
+            # self.search_bar.show()
 
-            animation = QPropertyAnimation(self.search_bar, b"fixedWidth")
-            animation.setStartValue(0)
-            animation.setEndValue(300)
-            animation.setDuration(1000)
+        self.searchBarAnimation.start()
 
-            animation.start()
+    def showAndHideToolPanel(self, button : QPushButton):
+
+        # create the animation for toolbar
+        self.toolBarAnimation = QPropertyAnimation(self.tool_bar, b'maximumHeight')
+        self.toolBarAnimation.setStartValue(self.tool_bar.height())
+        self.toolBarAnimation.setDuration(500)
+
+        if self.tool_bar.maximumHeight() >= 220:
+            self.toolBarAnimation.setEndValue(0)
+            self.toolBarAnimation.setEasingCurve(QEasingCurve.OutCubic)
+            # set the button mew icon
+            button.setIcon(QIcon("img/sys/arrow-down-sign-to-navigate.png"))
+        else:
+            self.toolBarAnimation.setEndValue(220)
+            self.toolBarAnimation.setEasingCurve(QEasingCurve.OutCubic)
+            # set the button new icon
+            button.setIcon(QIcon("img/sys/up-arrow.png"))
+
+        self.toolBarAnimation.start()
 
 
     def setUpSearchBar(self):
@@ -237,8 +259,8 @@ class FileArea(QWidget):
         hbox.setContentsMargins(0, 20, 0, 20)
 
         searchButton = QPushButton("")
-        searchButton.setIcon(QIcon("img/sys/search-icon.png"))
-        searchButton.setIconSize(QSize(40, 40))
+        searchButton.setIcon(QIcon("img/sys/search.png"))
+        searchButton.setIconSize(QSize(25, 25))
         searchButton.pressed.connect(self.showAndHideSearchBar)
         searchButton.setObjectName("search-bar-button")
 
@@ -246,17 +268,11 @@ class FileArea(QWidget):
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search Anything")
         self.search_bar.setObjectName("search-bar")
-        self.search_bar.resize(QSize(300, 30))
-        self.search_bar.hide()
+        # self.search_bar.resize(QSize(450, 25))
+        self.search_bar.setMaximumWidth(0)
+        # self.search_bar.hide()
         # set the action for search bar
         self.search_bar.textChanged.connect(self.searchFolderFiles)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(25)
-        shadow.setColor(QColor(40, 40, 40))
-        shadow.setXOffset(-10)
-        # set the shadow
-        self.search_bar.setGraphicsEffect(shadow)
 
         # create the path bar
         self.path_bar = PathBar(self.file_engine.getStringPath(self.file_engine.current_path), self.file_engine.current_path)
@@ -274,6 +290,12 @@ class FileArea(QWidget):
         self.reverseSortBox.addItems(["Asc", "Desc"])
         self.reverseSortBox.currentIndexChanged.connect(self.sortWidgets)
 
+        # create the button for hide and show the tool panel
+        toolPanelHideShowButton = QPushButton()
+        toolPanelHideShowButton.setObjectName("tool-panel-hide-button")
+        toolPanelHideShowButton.setIcon(QIcon("img/sys/up-arrow.png"))
+        toolPanelHideShowButton.pressed.connect(lambda e= toolPanelHideShowButton : self.showAndHideToolPanel(e))
+
         hbox.addWidget(searchButton)
         hbox.addWidget(self.search_bar)
         hbox.addWidget(self.path_bar)
@@ -281,6 +303,8 @@ class FileArea(QWidget):
         hbox.addWidget(QLabel("Sort by"))
         hbox.addWidget(self.sortComboBox)
         hbox.addWidget(self.reverseSortBox)
+        hbox.addSpacing(15)
+        hbox.addWidget(toolPanelHideShowButton)
 
         return hbox
 
@@ -300,6 +324,8 @@ class FileArea(QWidget):
             # set the signal slots
             if isinstance(widget , ImageWidget):
                 widget.image_open_signal.connect(self.loadToPhotoViwer)
+            elif widget.isVideoFile():
+                widget.video_play_singal.connect(self.loadToVideoPlayer)
             self.files.append(widget)
 
 
@@ -379,6 +405,12 @@ class FileArea(QWidget):
         for w in file_widgets:
             self.files.append(w)
             w.changeView(self.viewChangedBox.currentIndex())
+
+            # connect signal slots
+            if isinstance(w, ImageWidget):
+                w.image_open_signal.connect(self.loadToPhotoViwer)
+            elif w.isVideoFile():
+                w.video_play_singal.connect(self.loadToVideoPlayer)
 
         # add to the grid view this files
         if self.viewChangedBox.currentIndex() == 0:
@@ -543,6 +575,16 @@ class FileArea(QWidget):
                 image_files.append(w.file)
 
         self.parent.openImages(image_files, image_files.index(current_file))
+
+    def loadToVideoPlayer(self, current_file  : str):
+
+        video_files = []
+        for w in self.files:
+            if w.isVideoFile():
+                video_files.append(w.file)
+
+        # call to the parent load video player method
+        self.parent.openVideo(video_files, video_files.index(current_file))
 
     def dragEnterEvent(self, event : QDragEnterEvent) -> None:
 

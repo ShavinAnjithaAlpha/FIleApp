@@ -26,15 +26,15 @@ class FolderWidget(Folder, QWidget):
     }
 
     FOLDER_ICONS = {
-        "N" : "img/sys/folder (3).png",
+        "N" : "img/sys/yellow_folder.png",
         "I" : "img/sys/image_folder.png",
         "V" : "img/sys/video_folder.png",
         "D" : "img/sys/doc_folder.png",
         "S" : "img/sys/system.png",
-        "RED" : "img/sys/video_folder.png",
+        "RED" : "img/sys/red_folder.png",
         "GREEN" : "img/sys/green_folder.png",
         "BLUE" : "img/sys/blue_folder.png",
-        "ORANGE" : "img/sys/folder (6).png",
+        "ORANGE" : "img/sys/orange_folder.png",
         "YELLOW" : "img/sys/yellow_folder.png"
     }
 
@@ -172,7 +172,7 @@ class FolderWidget(Folder, QWidget):
         delete_action.triggered.connect(self.delete)
         folderMenu.addAction(delete_action)
 
-        remove_action = QAction(QIcon("img/sys/delete.png"), "Remove", self)
+        remove_action = QAction(QIcon("img/sys/close.png"), "Remove", self)
         remove_action.triggered.connect(self.remove)
         folderMenu.addAction(remove_action)
 
