@@ -18,6 +18,8 @@ from widgets.path_bar import PathBar
 
 class FileArea(QWidget):
 
+    COLUMNS = 7
+
     folder_status_signal = pyqtSignal(list)
     image_status_signal = pyqtSignal(list)
     file_status_signal = pyqtSignal(list)
@@ -127,12 +129,15 @@ class FileArea(QWidget):
         forward_action = self.action_button("", QIcon("img/sys/right-arrow.png"), self.goForward)
 
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(home_action)
-        hbox.addWidget(back_action)
-        hbox.addWidget(forward_action)
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setSpacing(0)
+        grid.addWidget(home_action, 0, 0)
+        grid.addWidget(back_action, 1, 0)
+        grid.addWidget(forward_action, 1 ,1)
 
-        gr_box.setLayout(hbox)
+
+        gr_box.setLayout(grid)
         return gr_box
 
 
@@ -144,13 +149,15 @@ class FileArea(QWidget):
 
         # add the view changed combo box
         self.viewChangedBox = QComboBox()
-        self.viewChangedBox.addItem(QIcon("img/sys/list.png"), "List View", 0)
-        self.viewChangedBox.addItem(QIcon("img/sys/blocks.png"), "Grid View", 1)
+        self.viewChangedBox.setIconSize(QSize(35, 35))
+        self.viewChangedBox.addItem(QIcon("img/sys/list_view.png"), "List", 0)
+        self.viewChangedBox.addItem(QIcon("img/sys/grid_view.png"), "Grid", 1)
         self.viewChangedBox.currentIndexChanged.connect(self.changeFolderMode)
 
         refresh_button = self.action_button("", QIcon("img/sys/refresh-arrow.png"), self.refresh)
 
         grid = QGridLayout()
+        grid.setSpacing(0)
         grid.addWidget(QLabel("Item View"), 0, 0)
         grid.addWidget(self.viewChangedBox, 1, 0)
         grid.addWidget(refresh_button, 0, 1, 2, 1, alignment=Qt.AlignVCenter)
@@ -169,9 +176,11 @@ class FileArea(QWidget):
         add_files_action =self.action_button("Add Files", QIcon("img/sys/add-file.png"), self.addFiles)
 
         # create the h box
-        hbox = QHBoxLayout()
-        hbox.addWidget(new_folder_action)
-        hbox.addWidget(add_files_action)
+        hbox = QGridLayout()
+        hbox.setContentsMargins(0, 0, 0, 0)
+        hbox.setSpacing(0)
+        hbox.addWidget(new_folder_action, 0, 0)
+        hbox.addWidget(add_files_action, 1, 0)
 
         gr_box.setLayout(hbox)
         return gr_box
@@ -208,7 +217,7 @@ class FileArea(QWidget):
 
         button = QPushButton(text)
         button.setIcon(icon)
-        button.setIconSize(QSize(40, 40))
+        button.setIconSize(QSize(35, 35))
         button.setObjectName("action_button")
         # button.setLayoutDirection(Qt.RightToLeft)
         # set the signal slot function
@@ -242,12 +251,12 @@ class FileArea(QWidget):
             self.toolBarAnimation.setEndValue(0)
             self.toolBarAnimation.setEasingCurve(QEasingCurve.OutCubic)
             # set the button mew icon
-            button.setIcon(QIcon("img/sys/arrow-down-sign-to-navigate.png"))
+            button.setIcon(QIcon("img/sys/expand_more.png"))
         else:
             self.toolBarAnimation.setEndValue(220)
             self.toolBarAnimation.setEasingCurve(QEasingCurve.OutCubic)
             # set the button new icon
-            button.setIcon(QIcon("img/sys/up-arrow.png"))
+            button.setIcon(QIcon("img/sys/expand_less.png"))
 
         self.toolBarAnimation.start()
 
@@ -292,8 +301,8 @@ class FileArea(QWidget):
 
         # create the button for hide and show the tool panel
         toolPanelHideShowButton = QPushButton()
-        toolPanelHideShowButton.setObjectName("tool-panel-hide-button")
-        toolPanelHideShowButton.setIcon(QIcon("img/sys/up-arrow.png"))
+        toolPanelHideShowButton.setObjectName("hide-button")
+        toolPanelHideShowButton.setIcon(QIcon("img/sys/expand_more.png"))
         toolPanelHideShowButton.pressed.connect(lambda e= toolPanelHideShowButton : self.showAndHideToolPanel(e))
 
         hbox.addWidget(searchButton)
@@ -383,15 +392,15 @@ class FileArea(QWidget):
                     [w.deleteLater() for w in self.temp_labels]
 
                     self.temp_labels.clear()
-                    self.grid.addWidget(folder_widget, (count - 1) // 6, (count - 1) % 6)
+                    self.grid.addWidget(folder_widget, (count - 1) // FileArea.COLUMNS, (count - 1) % FileArea.COLUMNS)
 
                     x = len([*self.folders, *self.files]) - 1
-                    if x % 6 != 0:
-                        while x % 6 != 0:
+                    if x % FileArea.COLUMNS != 0:
+                        while x % FileArea.COLUMNS != 0:
                             x += 1
                             label = QLabel()
                             self.temp_labels.append(label)
-                            self.grid.addWidget(label, x // 6, x % 6)
+                            self.grid.addWidget(label, x // FileArea.COLUMNS, x % FileArea.COLUMNS)
 
     def addFiles(self):
 
@@ -422,15 +431,15 @@ class FileArea(QWidget):
             self.temp_labels.clear()
 
             for i, w in enumerate(file_widgets):
-                self.grid.addWidget(w, (i + count) // 6, (i + count) % 6)
+                self.grid.addWidget(w, (i + count) // FileArea.COLUMNS, (i + count) % FileArea.COLUMNS)
 
             x = len([*self.folders, *self.files]) - 1
-            if x % 6 != 0:
-                while x % 6 != 0:
+            if x % FileArea.COLUMNS != 0:
+                while x % FileArea.COLUMNS != 0:
                     x += 1
                     label = QLabel()
                     self.temp_labels.append(label)
-                    self.grid.addWidget(label, x // 6, x % 6)
+                    self.grid.addWidget(label, x // FileArea.COLUMNS, x % FileArea.COLUMNS)
 
     def cleanArea(self):
 
@@ -481,14 +490,14 @@ class FileArea(QWidget):
 
             x = len([*self.folders, *self.files]) - 1
             for i, w in enumerate([*self.folders, *self.files]):
-                self.grid.addWidget(w, i//6, i%6)
+                self.grid.addWidget(w, i//FileArea.COLUMNS, i%FileArea.COLUMNS)
 
-            if x%6 != 0:
-                while x%6 != 0:
+            if x % FileArea.COLUMNS != 0:
+                while x%FileArea.COLUMNS != 0:
                     x += 1
                     label = QLabel()
                     self.temp_labels.append(label)
-                    self.grid.addWidget(label, x//6, x%6)
+                    self.grid.addWidget(label, x//FileArea.COLUMNS, x % FileArea.COLUMNS)
 
 
 

@@ -186,12 +186,12 @@ style_sheet = """
             QTreeView {
                 show-decoration-selected: 1;
                 border : none;
-                border-top : 1px solid rgba(50, 50, 50, 0.5)
+                border-top : 1px solid rgba(50, 50, 50, 0.5);
+                font-size : 20px;
             }
             
             QTreeView::item {
                 padding : 3px 5px;
-                border: 1px solid rgba(70, 70, 70, 0.5);
                 border-top-color: transparent;
                 border-bottom-color: transparent;
             }
@@ -299,14 +299,15 @@ style_sheet = """
                 border: 0.5px solid rgb(70, 70, 70);
                 border-radius: 8px;
                 font-size : 18px;
-                margin : 10px; /* leave space at the top for the title */
-}
+                margin : 10px 5px; /* leave space at the top for the title */
+            }
                                     
             QPushButton#action_button {background : none;
                                         border : none;
                                         font-size : 18px;
                                         text-align : align-bottom;
-                                        color : white}
+                                        color : white;
+                                        margin : 5px;}
                                         
             QPushButton#action_button:hover {background-color  :rgba(70, 70, 70, 0.5);
                                             border-radius : 8px;
@@ -339,12 +340,14 @@ style_sheet = """
                                 background-color : rgb(25, 25, 25);}
                                 
             
-            QPushButton#tool-panel-hide-button {
-                    background : rgb(40, 40, 40);
+                    
+            QPushButton#hide-button {
+                    background : none;
+                    border-radius : 8px;
                     padding : 8px;
-                    border-radius: 18px;}
-            
-            QPushButton#tool-panel-hide-button:hover {
-                    background-color : rgb(50, 50, 50);}
+                }
+                
+            QPushButton#hide-button:hover {
+                    background-color : rgba(50, 50, 50, 0.8)}
             
             """

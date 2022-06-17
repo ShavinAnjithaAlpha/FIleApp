@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QDockWidget, QTabWidget,
-                             QTabBar, QToolBar, QDesktopWidget, QScrollArea, QLabel)
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QGridLayout, QTabWidget,
+                             QTabBar, QToolBar, QDesktopWidget, QScrollArea, QLabel, QSplitter, QPushButton)
+from PyQt5.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QIcon
 
 from widgets.file_area import FileArea
@@ -35,30 +35,31 @@ class FileApp(QMainWindow):
         # set up the toolbar
         self.setUpToolBar()
         # set up the dock area
-        self.setUpDock()
+        # self.setUpDock()
         # set up the central widget
         self.setUpCentral()
 
         self.show() # shoe window on the screen
 
-    def setUpDock(self):
+    def setUpDock(self, splitter : QGridLayout):
         # declare the dock widgets list
         self.docks_widgets = []
 
         # create the dock area
-        self.dock = QDockWidget("Status Bar", self)
-        self.dock.setMinimumWidth(int(self.full_size.width() * 0.2))
-        self.dock.setAllowedAreas(Qt.RightDockWidgetArea)
-
-        self.dock.setFloating(False)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+        # self.dock = QDockWidget("Status Bar", self)
+        # self.dock.setMinimumWidth(int(self.full_size.width() * 0.2))
+        # self.dock.setAllowedAreas(Qt.RightDockWidgetArea)
+        #
+        # self.dock.setFloating(False)
+        # self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
 
 
         # create the scroll area for dock widget
         scroll_area = QScrollArea()
+        scroll_area.setContentsMargins(0, 0, 0, 0)
         scroll_area.setWidgetResizable(True)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
 
         # create the vbox for the dock widget
@@ -70,7 +71,18 @@ class FileApp(QMainWindow):
         widget.setContentsMargins(0, 0, 0, 0)
         widget.setLayout(self.dock_vbox)
         scroll_area.setWidget(widget)
-        self.dock.setWidget(scroll_area)
+        # self.dock.setWidget(scroll_area)
+
+        hideButton = QPushButton()
+        hideButton.setObjectName("hide-button")
+        hideButton.setIcon(QIcon("img/sys/arrow_forward.png"))
+        hideButton.pressed.connect(lambda e = scroll_area, b = hideButton : self.hideStatusPanel(e, b))
+
+        # splitter.addWidget(hideButton)
+        splitter.addWidget(scroll_area, 0, 2)
+        splitter.addWidget(hideButton, 0, 1, alignment=Qt.AlignTop)
+        scroll_area.setMaximumWidth(int(self.width() * 0.22))
+
 
         self.addTreeView() # set up the tree view in the dock widget area
 
@@ -82,6 +94,22 @@ class FileApp(QMainWindow):
         self.dock_vbox.insertWidget(1, self.tree)
 
         self.tree.doubleClicked.connect(self.openFolder)
+
+    def hideStatusPanel(self, scroll_area : QScrollArea, button : QPushButton):
+
+        self.statusPanelAnimation = QPropertyAnimation(scroll_area, b'maximumWidth')
+        self.statusPanelAnimation.setStartValue(scroll_area.width())
+        self.statusPanelAnimation.setEasingCurve(QEasingCurve.OutCubic)
+        self.statusPanelAnimation.setDuration(600)
+
+        if scroll_area.width() > 0:
+            self.statusPanelAnimation.setEndValue(0)
+            self.statusPanelAnimation.start()
+            button.setIcon(QIcon("img/sys/arrow_back.png"))
+        else:
+            self.statusPanelAnimation.setEndValue(int(self.width() * 0.22))
+            self.statusPanelAnimation.start()
+            button.setIcon(QIcon("img/sys/arrow_back.png"))
 
 
     def setUpToolBar(self):
@@ -108,7 +136,6 @@ class FileApp(QMainWindow):
         self.tab_bar = QTabWidget()
         self.tab_bar.setTabsClosable(True)
         self.tab_bar.setTabShape(QTabWidget.Rounded)
-        self.setCentralWidget(self.tab_bar)
 
         # set the tab closed request slots for close the tab
         self.tab_bar.tabCloseRequested.connect(self.closeTab)
@@ -128,6 +155,18 @@ class FileApp(QMainWindow):
 
         self.tab_bar.addTab(self.current_file_area , "Home")
         self.tab_bar.setCurrentIndex(0)
+
+
+        central_widget = QWidget()
+        central_widget.setContentsMargins(0, 0, 0, 0)
+        # create the splitter
+        splitter_box = QGridLayout()
+        splitter_box.setContentsMargins(0, 0, 0, 0)
+        central_widget.setLayout(splitter_box)
+        splitter_box.addWidget(self.tab_bar, 0, 0)
+        self.setUpDock(splitter_box)
+
+        self.setCentralWidget(central_widget)
 
     def addNewFileTab(self, event):
 
@@ -171,14 +210,14 @@ class FileApp(QMainWindow):
         if len(self.docks_widgets) == 1:
             self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
-            self.docks_widgets.append(status_widget)
+            self.docks_widgets.insert(0, status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[1])
-            self.docks_widgets[1].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
             # update the list
-            self.docks_widgets.insert(1, status_widget)
+            self.docks_widgets.insert(0, status_widget)
             self.dock_vbox.insertWidget(0, status_widget)
 
     def createImageStatus(self, data : list):
@@ -195,15 +234,15 @@ class FileApp(QMainWindow):
         if len(self.docks_widgets) == 1:
             self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
-            self.docks_widgets.append(status_widget)
+            self.docks_widgets.insert(0, status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[1])
-            self.docks_widgets[1].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
             # update the list
             self.docks_widgets.insert(0, status_widget)
-            self.dock_vbox.insertWidget(1, status_widget)
+            self.dock_vbox.insertWidget(0, status_widget)
 
     def createFileStatus(self, data : list):
 
@@ -218,15 +257,15 @@ class FileApp(QMainWindow):
         if len(self.docks_widgets) == 1:
             self.dock_vbox.insertWidget(0, status_widget)
             self.dock_vbox.addStretch()
-            self.docks_widgets.append(status_widget)
+            self.docks_widgets.insert(0, status_widget)
 
         else:
             # first remove the status widget
-            self.dock_vbox.removeWidget(self.docks_widgets[1])
-            self.docks_widgets[1].deleteLater()
+            self.dock_vbox.removeWidget(self.docks_widgets[0])
+            self.docks_widgets[0].deleteLater()
             # update the list
             self.docks_widgets.insert(0, status_widget)
-            self.dock_vbox.insertWidget(1, status_widget)
+            self.dock_vbox.insertWidget(0, status_widget)
 
     def openRecycleBin(self):
 

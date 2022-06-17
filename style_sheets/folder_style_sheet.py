@@ -19,13 +19,16 @@ style_sheet = """
                     
             QLabel {
                 background : none;
-                font-weight : 400;}
+                font-weight : 400;
+                margin : 0px;
+                padding : 5px; } 
                 
             QLabel#name-label {
                             color : rgba(255, 255, 255, 0.87);
                             font-size : 24px;
                             font-family : Calibri;
-                            font-weight : normal;}
+                            font-weight : normal;
+                            max-height : 30px;}
                             
             QLabel#time-label {color : rgba(250, 250, 250, 0.6);
                                 font-size : 20px;

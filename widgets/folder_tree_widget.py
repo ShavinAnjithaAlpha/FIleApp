@@ -1,5 +1,3 @@
-import os
-import sys, sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow,QWidget, QTreeView, QVBoxLayout
 from PyQt5.Qt import Qt, QFont, QStandardItem, QStandardItemModel, QHeaderView, QThread, QModelIndex, QSize
 from PyQt5.QtGui import QColor, QIcon
@@ -78,6 +76,7 @@ class FolderTreeWidget(QTreeView):
 
         # create the header video for tree view
         header_view = QHeaderView(Qt.Horizontal)
+        header_view.setContentsMargins(0, 0, 0, 0)
         self.setHeader(header_view)
         self.header().setStretchLastSection(False)
 
@@ -87,6 +86,8 @@ class FolderTreeWidget(QTreeView):
         rootItem = self.model.invisibleRootItem()
         self.setModel(self.model)
         self.setIconSize(QSize(30, 30))
+        self.setMinimumSize(QSize(300, 900))
+        self.setContentsMargins(0, 0, 0 , 0)
 
         self.rootPath = "."
         self.buildTreeModel(self.rootPath, rootItem)
@@ -138,6 +139,7 @@ class FolderTreeWidget(QTreeView):
     def buildSubTree(self, index : QModelIndex):
 
         node = self.model.item(index.row(), 0)
+        print(node.item)
         if node.type == "Folder":
             self.buildTreeModel(node.item[1], node)
 

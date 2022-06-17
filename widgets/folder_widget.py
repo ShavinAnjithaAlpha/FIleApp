@@ -39,6 +39,8 @@ class FolderWidget(Folder, QWidget):
     }
 
 
+    ICON_HEIGHT = 90
+
     def __init__(self, name, path, time, fav, type = 'N' , pw = None ,parent = None):
         super(FolderWidget, self).__init__(name, path, time, fav)
         QWidget.__init__(self, parent)
@@ -50,7 +52,7 @@ class FolderWidget(Folder, QWidget):
         self.name_label.setObjectName("name-label")
 
         self.icon_label = QLabel()
-        self.icon_label.setFixedHeight(120)
+        # self.icon_label.setFixedHeight(self.ICON_HEIGHT)
         self.setFolderIcon(type)
 
         self.time_label = QLabel(self.formatTime(f"{self.time}"))
@@ -61,6 +63,7 @@ class FolderWidget(Folder, QWidget):
         # create the grid
         self.grid = QGridLayout()
         self.grid.setVerticalSpacing(0)
+        self.grid.setSpacing(0)
         # self.changeView(0)
 
         # create the base widget
@@ -117,12 +120,12 @@ class FolderWidget(Folder, QWidget):
 
         elif index == 1:
             self.name_label.setWordWrap(True)
-            self.grid.addWidget(self.favorite_button, 0, 0)
-            self.grid.addWidget(self.icon_label, 1, 0, 1, 1)
-            self.grid.addWidget(self.name_label, 2, 0, 1, 1)
+            self.grid.addWidget(self.favorite_button, 0, 0, alignment=Qt.AlignLeft)
+            self.grid.addWidget(self.icon_label, 1, 0)
+            self.grid.addWidget(self.name_label, 2, 0)
             # adjust th size of the  widget
-            self.setFixedWidth(230)
-            self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum))
+            # self.setFixedWidth(230)
+            self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
 
         else:
             pass
@@ -259,7 +262,7 @@ class FolderWidget(Folder, QWidget):
     def setFolderIcon(self, type : str):
 
         self.icon_label.setPixmap(QPixmap(self.FOLDER_ICONS.get(type, "img/sys/folder (3).png"))
-                                  .scaledToHeight(self.icon_label.height()))
+                                  .scaledToHeight(self.ICON_HEIGHT))
 
     def changeColor(self, type : str):
 

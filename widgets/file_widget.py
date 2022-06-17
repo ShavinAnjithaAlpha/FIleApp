@@ -16,6 +16,8 @@ class FileWidget(File, QWidget):
 
     MAX_FILE_NAME_LENGTH = 20
 
+    ICON_HEIGHT = 90
+
     icon_dict = {
         ".pdf": "img/sys/pdf.png",
         ".txt": "img/sys/text-format.png",
@@ -41,7 +43,7 @@ class FileWidget(File, QWidget):
     def initilizeUI(self):
 
         self.imageView = QLabel()
-        self.imageView.setFixedHeight(120)
+        # self.imageView.setFixedHeight(120)
         # self.imageView.adjustSize()
         # fill the appropriate file icon for imageView label
         self.fillIcon()
@@ -82,7 +84,7 @@ class FileWidget(File, QWidget):
 
         ext = self.getExtension()
         self.imageView.setPixmap(
-            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/file.png")).scaledToHeight(self.imageView.height()))
+            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/file.png")).scaledToHeight(self.ICON_HEIGHT))
 
     def setUpFavoriteButton(self):
 
@@ -126,7 +128,7 @@ class FileWidget(File, QWidget):
             self.setMaximumWidth(2000)
 
         elif index == 1:
-            self.file_name_label.setMaximumWidth(230)
+            # self.file_name_label.setMaximumWidth(230)
 
             self.size_label.hide() # hide the size label from grid view
             self.grid.addWidget(self.fav_button, 0, 0, alignment=Qt.AlignRight)

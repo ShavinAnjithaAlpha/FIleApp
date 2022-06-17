@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QLineEdit
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtGui import QIcon
 
 from style_sheets.path_bar_style_sheet import style_sheet
 
@@ -44,9 +45,12 @@ class PathBar(QWidget):
                     button = QPushButton(item)
                     button.setObjectName("path-button")
                     button.pressed.connect(lambda e=button.text(): self.emitPath(e))
+                    label = QPushButton(QIcon("img/sys/arrow_forward.png"), "")
                     # add to the list
                     self.button_list.append(button)
+                    self.button_list.append(label)
                     self.hbox.addWidget(button)
+                    self.hbox.addWidget(label)
 
         base = QWidget()
         base.setObjectName("base")
@@ -89,7 +93,7 @@ class PathBar(QWidget):
         button = QPushButton("Home")
         button.setObjectName("path-button")
         button.pressed.connect(lambda: self.emitPath("Home"))
-        label = QLabel(">")
+        label = QPushButton(QIcon("img/sys/arrow_forward.png"), "")
         # add to the list
         self.button_list.append(button)
         self.button_list.append(label)
@@ -102,7 +106,7 @@ class PathBar(QWidget):
                     button = QPushButton(item)
                     button.setObjectName("path-button")
                     button.pressed.connect(lambda e=button.text(): self.emitPath(e))
-                    label = QLabel(">")
+                    label = QPushButton(QIcon("img/sys/arrow_forward.png"), "")
                     # add to the list
                     self.button_list.append(button)
                     self.button_list.append(label)

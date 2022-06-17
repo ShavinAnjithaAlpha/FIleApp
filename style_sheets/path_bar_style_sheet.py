@@ -22,6 +22,13 @@ style_sheet = """
             padding : 2px;
             margin : 0px;
         }
+        
+        QPushButton {
+            margin : 0px;
+            padding : 0px;
+            background : none;
+            border : none;
+        }
                 
         QPushButton#path-button {background-color : rgb(40, 40, 40);
                                 color : rgb(200, 200, 200);
