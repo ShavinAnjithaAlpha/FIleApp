@@ -2,6 +2,9 @@ import os , sys, sqlite3
 from util.path_manager import path_manager
 import datetime
 
+from util.Folder import Folder
+from util.File import File
+
 class db_injector:
     def __init__(self, path = "db/main.db", save_config = True):
         self.path = path
@@ -26,9 +29,9 @@ class db_manager:
     def __init__(self, path = "db/main.db"):
         self.path = path
         # initialize the db folder if it does not exist
-        if not os.path.exists("db"):
-            os.mkdir("db")
-            self.initialize_db()
+        # if not os.path.exists("db"):
+        #     os.mkdir("db")
+        #     self.initialize_db()
 
 
     def initialize_db(self):
@@ -41,7 +44,7 @@ class db_manager:
                                         path TEXT NOT NULL UNIQUE ,
                                         time TIMESTAMP NOT NULL ,
                                         fav BOOLEAN NOT NULL,
-                                        type TEXT NOT NULL 'N',
+                                        type TEXT NOT NULL DEFAULT 'N',
                                         pw TEXT)"""
             )
 
@@ -78,6 +81,26 @@ class db_manager:
                                                                                                now, False, type))
         return folder_path
 
+    def add_instance(self, children : list[Folder, File]):
+
+        with db_injector(self.path) as cursor:
+            for child in children:
+                if isinstance(child, Folder):
+                    self.add_folder_instance(child, cursor)
+                else:
+                    self.add_file_instance(child, cursor)
+
+    def add_folder_instance(self, folder : Folder, cursor):
+
+        cursor.execute("INSERT INTO folders(name, path, time, fav, type) VALUES(?, ?, ?, ?, ?) ",
+                       (folder.name, folder.path, folder.time, folder.fav, folder.type))
+
+    def add_file_instance(self, file : File, cursor):
+
+        cursor.execute("INSERT INTO files(file, path, time, fav) VALUES (?, ?, ?, ?)",
+                       (file.file, file.path, file.time, file.fav))
+
+
     def add_file(self, file : str , path : str):
 
         now = datetime.datetime.now()
@@ -113,7 +136,7 @@ class db_manager:
 
         return paths_
 
-    def open_folder(self, path : str):
+    def open_folder(self, path : str) -> list[list]:
 
         with db_injector(self.path, False) as cursor:
             cursor.execute(f"SELECT name, path, time, fav, type ,pw FROM folders WHERE path LIKE ? ORDER BY time " ,
@@ -132,6 +155,17 @@ class db_manager:
             return paths_
 
         return []
+
+    def open_folder_as_instance(self, path : str) -> list[Folder]:
+
+        paths = self.open_folder(path)
+        folders = []
+        for folder in paths:
+            folders.append(
+                Folder(folder[0], folder[1], folder[2], folder[3], folder[4])
+            )
+
+        return folders
 
     def folder_count(self, path  :str):
         return len(self.open_folder(path))
@@ -152,6 +186,10 @@ class db_manager:
             return cursor.fetchall()
 
         return []
+
+    def open_files_as_instance(self, path : str) -> list[File]:
+        files_ = self.open_files(path)
+        return [File(*x) for x in self.open_files(path)]
 
     def get_folder_name(self, path : str):
 
@@ -252,6 +290,23 @@ class db_manager:
                 cursor.execute("INSERT INTO recycle_files(id, file, path, time, fav) VALUES(?, ?, ? ,?, ?)", data[0])
                 return True
             return False
+
+    def delete_from_instance(self, children : list[Folder, File]):
+
+        with db_injector(self.path) as cursor:
+            for child in children:
+                if isinstance(child, Folder):
+                    self.delete_folder_instance(child, cursor)
+                else:
+                    self.delete_file_instance(child, cursor)
+
+    def delete_folder_instance(self, folder : Folder , cursor):
+
+        cursor.execute("DELETE FROM folders WHERE path = ? AND name = ?", (folder.path, folder.name))
+
+    def delete_file_instance(self, file : File, cursor):
+
+        cursor.execute("DELETE FROM files WHERE file = ? AND path = ?", (file.file, file.path))
 
     def removeFolder(self, path : str) -> bool:
 

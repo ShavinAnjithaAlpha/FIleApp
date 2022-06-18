@@ -42,7 +42,7 @@ class FolderWidget(Folder, QWidget):
     ICON_HEIGHT = 90
 
     def __init__(self, name, path, time, fav, type = 'N' , pw = None ,parent = None):
-        super(FolderWidget, self).__init__(name, path, time, fav)
+        super(FolderWidget, self).__init__(name, path, time, fav, type)
         QWidget.__init__(self, parent)
         self.parent = parent
         self.password = pw

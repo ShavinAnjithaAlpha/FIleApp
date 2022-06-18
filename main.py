@@ -109,7 +109,7 @@ class FileApp(QMainWindow):
         else:
             self.statusPanelAnimation.setEndValue(int(self.width() * 0.22))
             self.statusPanelAnimation.start()
-            button.setIcon(QIcon("img/sys/arrow_back.png"))
+            button.setIcon(QIcon("img/sys/arrow_forward.png"))
 
 
     def setUpToolBar(self):

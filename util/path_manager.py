@@ -31,6 +31,17 @@ class path_manager:
     }
 
     @staticmethod
+    def filter_sub_path(parent_path : str , full_path : str):
+
+        sub_path = ""
+        for i in range(len(full_path)):
+            if not(i < len(parent_path) and parent_path[i] == full_path[i]):
+                sub_path += full_path[i]
+        if sub_path == "":
+            return ""
+        return sub_path[1:]
+
+    @staticmethod
     def get_last_index(path : str) -> int:
         if "." in path:
             return int(path.split(".")[-1])
