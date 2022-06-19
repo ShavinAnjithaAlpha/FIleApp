@@ -62,8 +62,9 @@ style_sheet = """
             QTabWidget::pane {border : none;}
             
             QTabBar::close-button {
-                        image : url(img/sys/remove.png);
-                        sub-control-position : left}
+                        image : url(img/sys/cross-free-icon-font (1).png);
+                        sub-control-position : left;
+                        margin-right : 10px;}
             
             QScrollBar:vertical {background-color : rgb(20, 20 ,20);
                                                 max-width : 10px;
@@ -327,7 +328,7 @@ style_sheet = """
             
             QToolBar::handle {
                     border-color : red;
-                    image: url(img/sys/more.png);
+                    image: url(img/sys/menu-dots-vertical-free-icon-font.png);
                     width : 30px;
                     height : 40px;
                 }

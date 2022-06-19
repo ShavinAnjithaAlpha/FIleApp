@@ -29,9 +29,9 @@ class db_manager:
     def __init__(self, path = "db/main.db"):
         self.path = path
         # initialize the db folder if it does not exist
-        # if not os.path.exists("db"):
-        #     os.mkdir("db")
-        #     self.initialize_db()
+        if not os.path.exists("db"):
+            os.mkdir("db")
+            self.initialize_db()
 
 
     def initialize_db(self):
@@ -207,7 +207,7 @@ class db_manager:
 
         file_list = []
         with db_injector(self.path, False) as cursor:
-            cursor.execute(f"SELECT file FROM files WHERE path = '{path}' ORDER  BY name")
+            cursor.execute(f"SELECT file FROM files WHERE path = '{path}' ORDER BY name ")
             data = cursor.fetchall()
             if data:
                 file_list = [x[0] for x in data]
@@ -218,7 +218,7 @@ class db_manager:
 
         with db_injector(self.path, False) as cursor:
             cursor.execute(
-                "SELECT name, path ,time, fav, type, pw FROM folders WHERE path LIKE ? ", (path ,))
+                "SELECT name, path ,time, fav, type, pw FROM folders WHERE path LIKE ? LIMIT 1", (path ,))
             return cursor.fetchall()[0]
 
         return []
@@ -231,7 +231,7 @@ class db_manager:
     def change_favorite_folder(self, path : str, state : bool):
 
         with db_injector(self.path) as cursor:
-            cursor.execute("UPDATE folders SET fav = ? WHERE path = ? ", (state, path))
+            cursor.execute("UPDATE folders SET fav = ? WHERE path = ?", (state, path))
 
     def change_favorite_file(self, path : str, file : str ,state : bool):
 
@@ -268,11 +268,11 @@ class db_manager:
 
         # get the info about the folder
         with db_injector(self.path) as cursor:
-            cursor.execute("SELECT * FROM folders WHERE path =  ?", (path, ))
+            cursor.execute("SELECT * FROM folders WHERE path =  ? LIMIT 1", (path, ))
             data = cursor.fetchall()
 
             if data:
-                cursor.execute("DELETE FROM folders WHERE path = ? ", (path, ))
+                cursor.execute("DELETE FROM folders WHERE path = ?", (path, ))
                 # add to the recycle bin table
                 cursor.execute("INSERT INTO recycle_folders(id, name, path, time, fav) VALUES(?, ?, ? ,?, ?)", data[0])
                 return True
@@ -281,7 +281,7 @@ class db_manager:
     def deleteFile(self, path: str , file : str) -> bool:
 
         with db_injector(self.path) as cursor:
-            cursor.execute("SELECT * FROM files WHERE path = ? AND file = ?", (path, file))
+            cursor.execute("SELECT * FROM files WHERE path = ? AND file = ? LIMIT 1", (path, file))
             data = cursor.fetchall()
 
             if data:
@@ -334,7 +334,7 @@ class db_manager:
     def open_favorites_folders(self):
 
         with db_injector(self.path, False) as cursor:
-            cursor.execute(f"SELECT name, path, time, fav FROM folders WHERE fav = ? " ,
+            cursor.execute(f"SELECT name, path, time, fav ,type ,pw FROM folders WHERE fav = ? " ,
                            (1, ))
             return cursor.fetchall()
 

@@ -1,14 +1,14 @@
 import os
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QScrollArea,
-                             QInputDialog, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox,
-                             QGraphicsEffect, QGraphicsDropShadowEffect)
+                             QPushButton, QLabel, QScrollArea, QMessageBox,
+                             QInputDialog, QToolBar, QComboBox, QFileDialog, QLineEdit, QGroupBox, QMenu, QAction)
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QPropertyAnimation, QEasingCurve
-from PyQt5.QtGui import QColor, QIcon, QDragEnterEvent, QDropEvent
+from PyQt5.QtGui import QColor, QIcon, QDragEnterEvent, QDropEvent, QContextMenuEvent
 
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
+from util.clipboard import ClipBoard, CopiedItem
 
 from widgets.folder_widget import FolderWidget
 from widgets.image_widget import ImageWidget
@@ -18,7 +18,7 @@ from widgets.path_bar import PathBar
 
 class FileArea(QWidget):
 
-    COLUMNS = 7
+    COLUMNS = 6
 
     folder_status_signal = pyqtSignal(list)
     image_status_signal = pyqtSignal(list)
@@ -27,11 +27,12 @@ class FileArea(QWidget):
     FOLDER_TYPES = {"Normal" : "N", "Image Folder" : "I", "Video Folder" : "V","Document Folder" : "D",
                     "System Folder" : "S", "Red" : "RED", "Green" : "GREEN", "Blue" : "BLUE"}
 
-    def __init__(self, db_manager : db_manager ,parent = None, * , path = ""):
+    def __init__(self, db_manager : db_manager ,parent = None, * , path = "", clipboard : ClipBoard = None):
         super(FileArea, self).__init__(parent)
         # declare the attributes
         self.parent = parent
-        self.db_manager = db_manager
+        self.db_manager = db_manager  # refer db_manager as instance variable
+        self.clipboard = clipboard # refer the clipboard as instance variable
         self.file_engine = FileEngine(db_manager, self)
         if path:
             self.file_engine.current_path = path
@@ -55,6 +56,7 @@ class FileArea(QWidget):
         # create the main widget
         self.mainWidget = QWidget()
         self.mainWidget.setContentsMargins(0, 0, 0, 0)
+        self.mainWidget.contextMenuEvent = lambda event : self.initiateContextMenu(event)
         scroll_area.setWidget(self.mainWidget) # append the widget to scroll area
 
         # create the grid layout for widget
@@ -124,9 +126,9 @@ class FileArea(QWidget):
         # create the actions
         home_action = self.action_button("", QIcon("img/sys/home.png"), self.home)
 
-        back_action = self.action_button("", QIcon("img/sys/back.png"), self.goBackward)
+        back_action = self.action_button("", QIcon("img/sys/arrow-left-free-icon-font.png"), self.goBackward)
 
-        forward_action = self.action_button("", QIcon("img/sys/right-arrow.png"), self.goForward)
+        forward_action = self.action_button("", QIcon("img/sys/arrow-right-free-icon-font.png"), self.goForward)
 
 
         grid = QGridLayout()
@@ -154,7 +156,7 @@ class FileArea(QWidget):
         self.viewChangedBox.addItem(QIcon("img/sys/grid_view.png"), "Grid", 1)
         self.viewChangedBox.currentIndexChanged.connect(self.changeFolderMode)
 
-        refresh_button = self.action_button("", QIcon("img/sys/refresh-arrow.png"), self.refresh)
+        refresh_button = self.action_button("", QIcon("img/sys/rotate-right-free-icon-font.png"), self.refresh)
 
         grid = QGridLayout()
         grid.setSpacing(0)
@@ -195,10 +197,12 @@ class FileArea(QWidget):
         rename_action = self.action_button("Rename", QIcon("img/sys/rename.png"), self.renameSeletedFolder)
         delete_action = self.action_button("Delete", QIcon("img/sys/delete.png"), self.deleteSelected)
         permant_delete_action = self.action_button("Remove", QIcon("img/sys/close.png"), self.removeSelected)
-        copy_action = self.action_button("Copy", QIcon("img/sys/copy.png"), lambda : None)
-        move_action = self.action_button("Move", QIcon("img/sys/forward.png"), lambda : None)
+        copy_action = self.action_button("Copy", QIcon("img/sys/copy.png"), lambda e=True : self.copy_selected_item(e))
+        move_action = self.action_button("Move", QIcon("img/sys/forward.png"), lambda e=False : self.copy_selected_item(e))
+        paste_action = self.action_button("Paste", QIcon("img/sys/file.png"), self.paste_selected_folder)
 
-        self.actions = [open_action, rename_action, delete_action, copy_action, move_action, permant_delete_action]
+        self.actions = [open_action, rename_action, delete_action, copy_action, move_action,
+                        paste_action, permant_delete_action]
         [action.setDisabled(True) for action in self.actions]
 
         grid = QGridLayout()
@@ -208,7 +212,8 @@ class FileArea(QWidget):
         grid.addWidget(delete_action, 0, 2)
         grid.addWidget(copy_action, 1, 0)
         grid.addWidget(move_action, 1, 1)
-        grid.addWidget(permant_delete_action, 1, 2)
+        grid.addWidget(paste_action, 1, 2)
+        grid.addWidget(permant_delete_action, 0, 3)
 
         gr_box.setLayout(grid)
         return gr_box
@@ -268,7 +273,7 @@ class FileArea(QWidget):
         hbox.setContentsMargins(0, 20, 0, 20)
 
         searchButton = QPushButton("")
-        searchButton.setIcon(QIcon("img/sys/search.png"))
+        searchButton.setIcon(QIcon("img/sys/search-free-icon-font.png"))
         searchButton.setIconSize(QSize(25, 25))
         searchButton.pressed.connect(self.showAndHideSearchBar)
         searchButton.setObjectName("search-bar-button")
@@ -277,9 +282,7 @@ class FileArea(QWidget):
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search Anything")
         self.search_bar.setObjectName("search-bar")
-        # self.search_bar.resize(QSize(450, 25))
         self.search_bar.setMaximumWidth(0)
-        # self.search_bar.hide()
         # set the action for search bar
         self.search_bar.textChanged.connect(self.searchFolderFiles)
 
@@ -302,7 +305,7 @@ class FileArea(QWidget):
         # create the button for hide and show the tool panel
         toolPanelHideShowButton = QPushButton()
         toolPanelHideShowButton.setObjectName("hide-button")
-        toolPanelHideShowButton.setIcon(QIcon("img/sys/expand_more.png"))
+        toolPanelHideShowButton.setIcon(QIcon("img/sys/expand_less.png"))
         toolPanelHideShowButton.pressed.connect(lambda e= toolPanelHideShowButton : self.showAndHideToolPanel(e))
 
         hbox.addWidget(searchButton)
@@ -316,6 +319,19 @@ class FileArea(QWidget):
         hbox.addWidget(toolPanelHideShowButton)
 
         return hbox
+
+    def initiateContextMenu(self, event : QContextMenuEvent):
+
+        # create the menu
+        menu = QMenu(self.mainWidget)
+        menu.setTitle("File Area Actions")
+
+        # create the actions
+        paste_action = QAction(QIcon("img/sys/file.png"),"Paste", self.mainWidget)
+        paste_action.triggered.connect(self.paste)
+        menu.addAction(paste_action)
+
+        menu.exec_(self.mainWidget.mapToGlobal(event.pos()))
 
     def pathBarClicked(self, path  :str):
 
@@ -364,6 +380,14 @@ class FileArea(QWidget):
         if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
             self.selected_widget.rename()
 
+    def copy_selected_item(self, state : bool):
+        if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
+            self.selected_widget.copyFolder(state)
+
+    def paste_selected_folder(self):
+        if self.selected_widget and isinstance(self.selected_widget, FolderWidget):
+            self.selected_widget.pasteItem()
+
     def deleteSelected(self):
 
         self.selected_widget.delete()
@@ -407,12 +431,12 @@ class FileArea(QWidget):
         files, ok = QFileDialog.getOpenFileNames(self, "Add Files", "", "All File(*.*)")
         if ok:
             file_widgets = self.file_engine.add_files(files)
+            self.populateFileWidgets(file_widgets)
 
     def populateFileWidgets(self, file_widgets : list):
 
         count = len([*self.files, *self.folders])
         for w in file_widgets:
-            self.files.append(w)
             w.changeView(self.viewChangedBox.currentIndex())
 
             # connect signal slots
@@ -420,6 +444,7 @@ class FileArea(QWidget):
                 w.image_open_signal.connect(self.loadToPhotoViwer)
             elif w.isVideoFile():
                 w.video_play_singal.connect(self.loadToVideoPlayer)
+            self.files.append(w)
 
         # add to the grid view this files
         if self.viewChangedBox.currentIndex() == 0:
@@ -516,7 +541,7 @@ class FileArea(QWidget):
         [a.setDisabled(False) for a in self.actions]
         #
         # fire the status signal
-        self.folder_status_signal.emit([self.selected_widget.name, self.selected_widget.path, self.selected_widget.time, self.selected_widget.fav])
+        self.folder_status_signal.emit([self.selected_widget.name, self.selected_widget.path, self.selected_widget.time, self.selected_widget.fav, self.selected_widget.type])
 
     def selectFile(self, file_widget):
 
@@ -532,9 +557,8 @@ class FileArea(QWidget):
         if self.selected_widget:
             if isinstance(file_widget, ImageWidget):
                 self.image_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
-            elif isinstance(file_widget, FileWidget):
+            else:
                 self.file_status_signal.emit([file_widget.file, file_widget.path, file_widget.time, file_widget.fav])
-
 
     def home(self):
 
@@ -615,6 +639,16 @@ class FileArea(QWidget):
             self.populateFileWidgets(file_widgets)
             return
         event.ignore()
+
+    def paste(self):
+        # initiate pasting process in the background
+        state = self.clipboard.paste(self.file_engine.current_path)
+        if state is not None and not state:
+            QMessageBox.warning(self, "Paste Error", "Error occured during paste process", QMessageBox.StandardButton.Ok)
+
+        if state:
+            self.refresh()
+
 
 
 

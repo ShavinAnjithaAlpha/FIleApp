@@ -23,12 +23,14 @@ style_sheet = """
                 margin : 0px;
                 padding : 5px; } 
                 
+            QLabel#icon-label {
+                border : 1px solid white;}
+                
             QLabel#name-label {
                             color : rgba(255, 255, 255, 0.87);
-                            font-size : 24px;
+                            font-size : 23px;
                             font-family : Calibri;
-                            font-weight : normal;
-                            max-height : 30px;}
+                            font-weight : normal;}
                             
             QLabel#time-label {color : rgba(250, 250, 250, 0.6);
                                 font-size : 20px;

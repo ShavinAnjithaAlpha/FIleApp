@@ -1,10 +1,9 @@
 import os.path
 
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
-    QGridLayout, QMessageBox, QSizePolicy
+    QGridLayout, QMessageBox, QSizePolicy, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QTime, QDate, pyqtSignal
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
-import datetime
 
 from util.File import File
 
@@ -31,10 +30,14 @@ class ImageWidget(File, QWidget):
                 self.imageView.size(), Qt.KeepAspectRatioByExpanding, Qt.FastTransformation))
         except:
             self.imageView.setPixmap(QPixmap("img/sys/picture.png").scaled(self.imageView.size(), Qt.KeepAspectRatioByExpanding, Qt.FastTransformation))
+        # adjist image view size
+        self.imageView.adjustSize()
 
         self.image_name_label = QLabel(self.filterImageName())
         self.image_name_label.setWordWrap(True)
         self.image_name_label.setObjectName("name-label")
+        self.image_name_label.adjustSize()
+        self.image_name_label.adjustSize()
 
         self.time_label = QLabel(self.formatTime(f"{self.time}"))
         self.time_label.setObjectName("time-label")
@@ -68,18 +71,18 @@ class ImageWidget(File, QWidget):
         self.fav_button.pressed.connect(self.changeFav)
 
         if self.fav:
-            self.fav_button.setIcon(QIcon("img/sys/star.png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.fav_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
     def changeFav(self):
 
         self.fav = not self.fav
         self.parent.file_engine.db_manager.change_favorite_file(self.path , self.file, self.fav)
         if self.fav:
-            self.fav_button.setIcon(QIcon("img/sys/star.png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.fav_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
 
     def changeView(self, index):
@@ -101,7 +104,7 @@ class ImageWidget(File, QWidget):
             self.grid.addWidget(self.imageView, 0, 0, alignment=Qt.AlignCenter)
             self.grid.addWidget(self.fav_button, 0, 0, alignment=Qt.AlignTop|Qt.AlignRight)
 
-            self.setSizePolicy(QSizePolicy())
+            self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
             self.setFixedSize(self.imageView.size())
 
         else:
@@ -139,9 +142,11 @@ class ImageWidget(File, QWidget):
         menu.addSeparator()
 
         copy_action = QAction(QIcon("img/sys/copy.png"), "Copy", self)
+        copy_action.triggered.connect(lambda e = True : self.copy(e))
         menu.addAction(copy_action)
 
         move_action = QAction(QIcon("img/sys/forward.png"), "Move", self)
+        move_action.triggered.connect(lambda e = False : self.copy(e))
         menu.addAction(move_action)
 
         menu.addSeparator()
@@ -226,4 +231,14 @@ class ImageWidget(File, QWidget):
                 self.parent.folders.remove(self)
                 # delete the folder widget
                 self.deleteLater()
+
+    def copy(self, state : bool):
+
+        self.parent.clipboard.copyItem(File(self.file, self.path, self.time, self.fav), state)
+
+        if not state:
+            blurEffect = QGraphicsBlurEffect()
+            blurEffect.setBlurRadius(3)
+            self.imageView.setGraphicsEffect(blurEffect)
+
 

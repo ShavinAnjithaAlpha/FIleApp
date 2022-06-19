@@ -1,12 +1,13 @@
 import os
 
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-                             QPushButton, QLabel, QComboBox, QFormLayout, QLineEdit)
-from PyQt5.QtCore import QSize, Qt, QDate, QTime, pyqtSignal
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
+                             QLabel, QFormLayout, QLineEdit)
+from PyQt5.QtCore import QSize, Qt, QDate, QTime
 from PyQt5.QtGui import QIcon, QPixmap
 
 from util.file_engine import FileEngine
 from util.db_manager import db_manager
+from util.db_manager import path_manager
 
 from style_sheets.status_widget_style_sheet import style_sheet
 
@@ -14,17 +15,26 @@ class WidgetFactory:
 
     db_manager = db_manager("db/main.db")
 
+    FILE_ICON_HEIGHT = 200
+    FOLDER_ICON_HEIGHT = 200
+    IMAGE_ICON_HEIGHT = 200
+
     icon_dict = {
-        ".pdf" : "img/sys/pdf.png",
-        ".txt" : "img/sys/text-format.png",
-        ".html" : "img/sys/html-5.png",
-        ".js" : "img/sys/js.png",
-        ".css" : "img/sys/css-3.png",
-        ".docx" : "img/sys/doc.png",
-        ".zip" : "img/sys/zip (1).png",
-        ".rar" : "img/sys/rar.png",
-        ".py" : "img/sys/python.png",
-        ".java" : "img/sys/java.png"
+        ".pdf": "img/sys/pdf.png",
+        ".txt": "img/sys/text-format.png",
+        ".html": "img/sys/html-5.png",
+        ".js": "img/sys/js.png",
+        ".css": "img/sys/css-3.png",
+        ".docx": "img/sys/doc.png",
+        ".zip": "img/sys/zip (1).png",
+        ".rar": "img/sys/rar.png",
+        ".py": "img/sys/python.png",
+        ".java": "img/sys/java.png",
+        ".mp4": "img/sys/video_folder.png",
+        ".mkv": "img/sys/video_folder.png",
+        ".mp3": "img/sys/musical-note.png",
+        ".MP3": "img/sys/musical-note.png",
+        ".wav": "img/sys/musical-note.png"
     }
 
     @staticmethod
@@ -45,8 +55,11 @@ class WidgetFactory:
         title_label.setObjectName("title-label")
 
         icon_label = QLabel()
-        icon_label.setFixedSize(QSize(220,170))
-        icon_label.setPixmap(QPixmap("img/sys/folder (3).png").scaled(icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        # icon_label.setFixedSize(QSize(220,170))
+        icon_label.setPixmap(QPixmap(path_manager.get_main_folder_icon(kwargs["type"])).scaledToHeight(
+            WidgetFactory.FOLDER_ICON_HEIGHT, Qt.SmoothTransformation
+        ))
+        icon_label.adjustSize()
 
         form.addRow(title_label)
         form.addRow(icon_label)
@@ -116,13 +129,14 @@ class WidgetFactory:
         title_label.setObjectName("title-label")
 
         icon_label = QLabel()
-        icon_label.setFixedSize(QSize(350, 250))
+        # icon_label.setFixedSize(QSize(350, 250))
         try:
             icon_label.setPixmap(
-                QPixmap(kwargs["File"]).scaled(icon_label.size(), Qt.KeepAspectRatioByExpanding, Qt.FastTransformation))
+                QPixmap(kwargs["File"]).scaledToHeight(WidgetFactory.IMAGE_ICON_HEIGHT, Qt.SmoothTransformation))
         except:
             icon_label.setPixmap(
-                QPixmap("img/sys/photo.png").scaled(icon_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                QPixmap("img/sys/photo.png").scaledToHeight(WidgetFactory.IMAGE_ICON_HEIGHT, Qt.SmoothTransformation))
+        icon_label.adjustSize()
 
         form.addRow(title_label)
         form.addRow(icon_label)
@@ -173,10 +187,10 @@ class WidgetFactory:
         title_label.setObjectName("title-label")
 
         icon_label = QLabel()
-        icon_label.setFixedSize(QSize(350, 250))
-        icon_label.setPixmap(QPixmap(WidgetFactory.icon_dict.get(kwargs["File Type"], "img/sys/file.png")).scaled(
-            icon_label.size(), Qt.KeepAspectRatio, Qt.FastTransformation
-        ))
+        # icon_label.setFixedSize(QSize(350, 250))
+        icon_label.setPixmap(QPixmap(WidgetFactory.icon_dict.get(kwargs["File Type"], "img/sys/tree_view_icons/file-free-icon-font (1).png"))
+                             .scaledToHeight(WidgetFactory.FILE_ICON_HEIGHT, Qt.SmoothTransformation))
+        icon_label.adjustSize()
 
         form.addRow(title_label)
         form.addRow(icon_label)

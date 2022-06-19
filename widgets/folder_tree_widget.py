@@ -85,15 +85,15 @@ class FolderTreeWidget(QTreeView):
         self.model.setHorizontalHeaderLabels(["File/Folder", "Date Added", "Size"])
         rootItem = self.model.invisibleRootItem()
         self.setModel(self.model)
-        self.setIconSize(QSize(30, 30))
+        self.setIconSize(QSize(20, 20))
         self.setMinimumSize(QSize(300, 900))
         self.setContentsMargins(0, 0, 0 , 0)
 
         self.rootPath = "."
         self.buildTreeModel(self.rootPath, rootItem)
-
-        self.pressed.connect(self.buildSubTree)
-        self.expanded.connect(self.buildSubTree)
+        #
+        # self.pressed.connect(self.buildSubTree)
+        # self.expanded.connect(self.buildSubTree)
 
     def buildTreeModel(self, path_code : str, parentItem : QStandardItem):
 
@@ -115,7 +115,6 @@ class FolderTreeWidget(QTreeView):
                      QStandardItem(path_manager.get_folder_size(self.db_manager, folder[1]))
                      ]
                 )
-                folderNode.appendRow(None)
 
         if files:
             for file in files:
@@ -127,19 +126,18 @@ class FolderTreeWidget(QTreeView):
                      ]
                 )
 
-        # # call to this method for build chidren's children nodes
-        # threads = []
-        # for i ,node in enumerate(folderNodes):
-        #     # self.buildTreeModel(folders[i][1], node)
-        #     thread = TreeBuildThread(self.db_manager, node, folders[i][1])
-        #     threads.append(thread)
-        #
-        # [thread.run() for thread in threads]
+        # call to this method for build chidren's children nodes
+        threads = []
+        for i ,node in enumerate(folderNodes):
+            # self.buildTreeModel(folders[i][1], node)
+            thread = TreeBuildThread(self.db_manager, node, folders[i][1])
+            threads.append(thread)
+
+        [thread.run() for thread in threads]
 
     def buildSubTree(self, index : QModelIndex):
 
         node = self.model.item(index.row(), 0)
-        print(node.item)
         if node.type == "Folder":
             self.buildTreeModel(node.item[1], node)
 

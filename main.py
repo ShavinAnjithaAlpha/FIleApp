@@ -12,6 +12,7 @@ from apps.photo_viewer import PhotoViewer
 from apps.video_player import VideoPlayer
 
 from util.db_manager import db_manager
+from util.clipboard import ClipBoard, CopiedItem
 
 from style_sheets.main_style_sheet import style_sheet
 
@@ -28,7 +29,8 @@ class FileApp(QMainWindow):
         self.full_size = QDesktopWidget().screenGeometry(-1).size()
         # declare the main current file area object
         self.current_file_area = None
-        self.db_manager = db_manager()
+        self.db_manager = db_manager() # initialize the db manager instance globally for handle database side
+        self.clipboard = ClipBoard(self.db_manager) # initialize clipboard instance for store copied items globally
 
         self.setWindowTitle("Files Manager")
         self.resize(self.full_size) # resize the window to the size of desktop
@@ -44,15 +46,6 @@ class FileApp(QMainWindow):
     def setUpDock(self, splitter : QGridLayout):
         # declare the dock widgets list
         self.docks_widgets = []
-
-        # create the dock area
-        # self.dock = QDockWidget("Status Bar", self)
-        # self.dock.setMinimumWidth(int(self.full_size.width() * 0.2))
-        # self.dock.setAllowedAreas(Qt.RightDockWidgetArea)
-        #
-        # self.dock.setFloating(False)
-        # self.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
-
 
         # create the scroll area for dock widget
         scroll_area = QScrollArea()
@@ -81,7 +74,7 @@ class FileApp(QMainWindow):
         # splitter.addWidget(hideButton)
         splitter.addWidget(scroll_area, 0, 2)
         splitter.addWidget(hideButton, 0, 1, alignment=Qt.AlignTop)
-        scroll_area.setMaximumWidth(int(self.width() * 0.22))
+        scroll_area.setMaximumWidth(int(self.width() * 0.21))
 
 
         self.addTreeView() # set up the tree view in the dock widget area
@@ -107,7 +100,7 @@ class FileApp(QMainWindow):
             self.statusPanelAnimation.start()
             button.setIcon(QIcon("img/sys/arrow_back.png"))
         else:
-            self.statusPanelAnimation.setEndValue(int(self.width() * 0.22))
+            self.statusPanelAnimation.setEndValue(int(self.width() * 0.21))
             self.statusPanelAnimation.start()
             button.setIcon(QIcon("img/sys/arrow_forward.png"))
 
@@ -116,16 +109,16 @@ class FileApp(QMainWindow):
 
         # create the toolbar
         self.tool_bar = QToolBar("Tool Bar")
-        self.tool_bar.setIconSize(QSize(20, 20))
-        self.tool_bar.setFixedHeight(int(self.full_size.height() * 0.09))
+        self.tool_bar.setIconSize(QSize(30, 30))
+        # self.tool_bar.setFixedHeight(int(self.full_size.height() * 0.09))
         self.tool_bar.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.addToolBar(Qt.TopToolBarArea, self.tool_bar)
 
 
 
-        self.tool_bar.addAction(QIcon("img/sys/trash.png"), "Recycle Bin",
+        self.tool_bar.addAction(QIcon("img/sys/trash-free-icon-font.png"), "Recycle Bin",
                                 self.openRecycleBin)
-        self.tool_bar.addAction(QIcon("img/sys/star.png"), "Favorites",
+        self.tool_bar.addAction(QIcon("img/sys/heart-free-icon-font (1).png"), "Favorites",
                                 self.openFavorites)
 
 
@@ -147,7 +140,7 @@ class FileApp(QMainWindow):
 
 
         # create the main tab widget
-        self.current_file_area = FileArea(self.db_manager, self)
+        self.current_file_area = FileArea(self.db_manager, self, clipboard=self.clipboard)
         # bind the file area to signal slots
         self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
         self.current_file_area.image_status_signal.connect(self.createImageStatus)
@@ -171,7 +164,7 @@ class FileApp(QMainWindow):
     def addNewFileTab(self, event):
 
         if event == self.tab_bar.tabBar().count() - 1:
-            self.current_file_area = FileArea(self.db_manager, self)
+            self.current_file_area = FileArea(self.db_manager, self ,clipboard=self.clipboard)
             self.current_file_area.folder_status_signal.connect(self.createFolderStatus)
             self.current_file_area.image_status_signal.connect(self.createImageStatus)
             self.current_file_area.file_status_signal.connect(self.createFileStatus)
@@ -203,7 +196,8 @@ class FileApp(QMainWindow):
             "Name" : data[0],
             "Path" : data[1],
             "Created at" : data[2].__str__(),
-            "favorite" : data[3]
+            "favorite" : data[3],
+            "type" : data[4]
         }
 
         status_widget = WidgetFactory.FolderStatusWidget(data[1], info)
@@ -278,7 +272,10 @@ class FileApp(QMainWindow):
 
     def openFavorites(self):
 
-        self.favorite_area = FavoritePanel(self.db_manager, self)
+        self.favorite_area = FavoritePanel(self.db_manager, self, clipboard=self.clipboard)
+        self.favorite_area.folder_status_signal.connect(self.createFolderStatus)
+        self.favorite_area.image_status_signal.connect(self.createImageStatus)
+        self.favorite_area.file_status_signal.connect(self.createFileStatus)
         self.favorite_area.folder_open_signal.connect(self.openFavoriteFolder)
         self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.favorite_area, "Favorite")
 
@@ -287,7 +284,7 @@ class FileApp(QMainWindow):
 
     def openFavoriteFolder(self, path : str):
 
-        self.current_file_area = FileArea(self.db_manager, self, path = path)
+        self.current_file_area = FileArea(self.db_manager, self, path = path, clipboard=self.clipboard)
         # self.current_file_area.openFolder(path)
         self.tab_bar.insertTab(self.tab_bar.tabBar().count() - 1, self.current_file_area, "Home(%d)".format(self.tab_bar.count()))
 

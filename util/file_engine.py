@@ -52,11 +52,11 @@ class FileEngine:
         # create the Folder Widget
         data = self.db_manager.folder(folder_path)
 
-        return FolderWidget(data[0], data[1], data[2], data[3], self.FOLDER_TYPES[type], self.parent)
+        return FolderWidget(data[0], data[1], data[2], data[3], self.FOLDER_TYPES.get(type, "N"), None, self.parent)
 
     def add_files(self, files : list[str]):
 
-        time = self.db_manager.add_files(files, self.current_path)
+        time = self.db_manager.add_files(files, self.current_path).__str__()
         # return the file widget lists
 
         file_widgets = []
@@ -121,7 +121,7 @@ class FileEngine:
         files_widget = []
         for item in folder_data:
             # create the folder widgets and return it
-            widget = FolderWidget(item[0], item[1], item[2], item[3], self.parent)
+            widget = FolderWidget(item[0], item[1], item[2], item[3], item[4], item[5], self.parent)
             folder_widgets.append(widget)
 
         for item in files_data:

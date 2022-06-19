@@ -1,7 +1,7 @@
 import os.path
 
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QMenu, \
-    QGridLayout, QMessageBox, QSizePolicy
+    QGridLayout, QMessageBox, QSizePolicy, QGraphicsBlurEffect
 from PyQt5.QtWidgets import QAction
 from PyQt5.QtCore import Qt, QSize, QTime, QDate, pyqtSignal
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
@@ -16,7 +16,7 @@ class FileWidget(File, QWidget):
 
     MAX_FILE_NAME_LENGTH = 20
 
-    ICON_HEIGHT = 90
+    ICON_HEIGHT = 80
 
     icon_dict = {
         ".pdf": "img/sys/pdf.png",
@@ -30,7 +30,10 @@ class FileWidget(File, QWidget):
         ".py": "img/sys/python.png",
         ".java": "img/sys/java.png",
         ".mp4" : "img/sys/video_folder.png",
-        ".mkv" : "img/sys/video_folder.png"
+        ".mkv" : "img/sys/video_folder.png",
+        ".mp3" : "img/sys/musical-note.png",
+        ".MP3": "img/sys/musical-note.png",
+        ".wav" : "img/sys/musical-note.png"
     }
 
     def __init__(self, file, path, time, fav = False, parent = None):
@@ -43,19 +46,18 @@ class FileWidget(File, QWidget):
     def initilizeUI(self):
 
         self.imageView = QLabel()
-        # self.imageView.setFixedHeight(120)
-        # self.imageView.adjustSize()
         # fill the appropriate file icon for imageView label
         self.fillIcon()
 
         self.file_name_label = QLabel()
         if len(self.filterFileName()) > FileWidget.MAX_FILE_NAME_LENGTH:
-            self.file_name_label.setText("{}...".format(self.filterFileName()[:50]))
+            self.file_name_label.setText("{}...".format(self.filterFileName()[:20]))
         else:
             self.file_name_label.setText(self.filterFileName())
 
         self.file_name_label.setWordWrap(True)
         self.file_name_label.setObjectName("name-label")
+        self.file_name_label.adjustSize()
 
         self.size_label = QLabel(self.size())
         self.size_label.setObjectName("size-label")
@@ -84,7 +86,9 @@ class FileWidget(File, QWidget):
 
         ext = self.getExtension()
         self.imageView.setPixmap(
-            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/file.png")).scaledToHeight(self.ICON_HEIGHT))
+            QPixmap(FileWidget.icon_dict.get(ext, "img/sys/tree_view_icons/file-free-icon-font (1).png")).scaledToHeight(self.ICON_HEIGHT))
+        # adjust icon label size
+        self.imageView.adjustSize()
 
     def setUpFavoriteButton(self):
 
@@ -96,18 +100,18 @@ class FileWidget(File, QWidget):
         self.fav_button.pressed.connect(self.changeFav)
 
         if self.fav:
-            self.fav_button.setIcon(QIcon("img/sys/star.png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.fav_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
     def changeFav(self):
 
         self.fav = not self.fav
         self.parent.file_engine.db_manager.change_favorite_file(self.path , self.file, self.fav)
         if self.fav:
-            self.fav_button.setIcon(QIcon("img/sys/star.png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.fav_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.fav_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
 
     def changeView(self, index):
@@ -124,6 +128,7 @@ class FileWidget(File, QWidget):
             self.grid.addWidget(self.time_label, 0, 3)
             self.grid.addWidget(self.fav_button, 0, 4, alignment=Qt.AlignRight|Qt.AlignRight)
 
+            self.setMaximumHeight(300)
             self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum))
             self.setMaximumWidth(2000)
 
@@ -165,9 +170,11 @@ class FileWidget(File, QWidget):
         menu.addSeparator()
 
         copy_action = QAction(QIcon("img/sys/copy.png"), "Copy", self)
+        copy_action.triggered.connect(lambda e = True : self.copy(e))
         menu.addAction(copy_action)
 
         move_action = QAction(QIcon("img/sys/forward.png"), "Move", self)
+        move_action.triggered.connect(lambda e = False : self.copy(e))
         menu.addAction(move_action)
 
         menu.addSeparator()
@@ -270,5 +277,13 @@ class FileWidget(File, QWidget):
 
         return self.getExtension() in [".mp4", ".mpeg", ".vob", ".mkv"]
 
+    def copy(self, state : bool):
+
+        self.parent.clipboard.copyItem(File(self.file, self.path, self.time, self.fav), state)
+
+        if not state:
+            blurEffect = QGraphicsBlurEffect()
+            # blurEffect.setBlurRadius(10)
+            self.imageView.setGraphicsEffect(blurEffect)
 
 

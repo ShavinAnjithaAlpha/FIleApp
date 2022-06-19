@@ -34,11 +34,11 @@ class PhotoViewer(QWidget):
         self.scroll_area.setWidget(self.imageViewLabel)
 
         # create the forward and backward buttons
-        self.back_btn = QPushButton("<")
+        self.back_btn = QPushButton(QIcon("img/sys/arrow_back.png"), "")
         self.back_btn.pressed.connect(self.goBackward)
         self.back_btn.setObjectName("backward-button")
 
-        self.forward_btn = QPushButton(">")
+        self.forward_btn = QPushButton(QIcon("img/sys/arrow_forward.png"), "")
         self.forward_btn.pressed.connect(self.goForward)
         self.forward_btn.setObjectName("forward-button")
 

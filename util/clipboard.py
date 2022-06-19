@@ -13,9 +13,16 @@ class ClipBoard:
         self.copied_items.append(CopiedItem(item, self.db_manager, flag))
 
     def paste(self, pasteFolder : [Folder, str]):
-        [item.setPasteFolder(pasteFolder) for item in self.copied_items]
-        # paste the item as database operation
-        [item.paste() for item in self.copied_items]
+        if self.copied_items:
+            [item.setPasteFolder(pasteFolder) for item in self.copied_items]
+            # paste the item as database operation
+            state = all([item.paste() for item in self.copied_items])
+
+            if state:
+                # remove the items from clipboard
+                self.copied_items.clear()
+            return state
+
 
 
 
@@ -72,15 +79,20 @@ class CopiedItem:
 
     def updateFilesPaths(self):
 
-        # update files path to new location
-        for file in self.children_files:
-            self.updated_children.append(
-                File(file.file,
-                     ".".join(
-                         [self.basePath, path_manager.filter_sub_path(self.rootFolder.path, file.path)]),
-                    file.time,
-                    file.fav)
-            )
+        if self.rootFolder is not None:
+            # update files path to new location
+            for file in self.children_files:
+                new_path =  ".".join(
+                             [self.basePath, path_manager.filter_sub_path(self.rootFolder.path, file.path)])
+                if new_path[-1] == ".":
+                    new_path = new_path[:-1]
+
+                self.updated_children.append(
+                    File(file.file,
+                        new_path,
+                        file.time,
+                        file.fav)
+                )
         # print("----------update files--------------")
         # print(updated_paths)
 
@@ -103,23 +115,30 @@ class CopiedItem:
                                    self.rootFolder.type)
 
     def paste(self):
-        if self.rootFolder:
-            # save to the database these folders and files
-            self.db_manager.add_instance([*self.updated_children, self.updated_root])
+        try:
+            if self.rootFolder:
+                # save to the database these folders and files
+                self.db_manager.add_instance([*self.updated_children, self.updated_root])
 
-            if not self.copyFlag:
-                self.remove()
+                if not self.copyFlag:
+                    self.remove()
 
-            print("[INFO] successfully pasted all")
+                print("[INFO] successfully pasted all")
 
-        if self.rootFile:
-            self.db_manager.add_instance((self.updated_file, ))
+            if self.rootFile:
+                self.db_manager.add_instance((self.updated_file, ))
+
+                if not self.copyFlag:
+                    self.remove()
+            return True
+        except:
+            return False
 
     def remove(self):
         if self.rootFolder:
             self.db_manager.delete_from_instance([*self.children_folders, *self.children_files, self.rootFolder])
         if self.rootFile:
-            self.db_manager.delete_from_instance((self.rootFile, ))
+            self.db_manager.delete_from_instance([self.rootFile, ])
 
 
 if __name__ == "__main__":

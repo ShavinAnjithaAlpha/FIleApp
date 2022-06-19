@@ -1,16 +1,18 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QMenu, QAction, \
-    QGridLayout, QInputDialog, QMessageBox, QSizePolicy
-from PyQt5.QtCore import Qt, QSize, QTime, QDate
+    QGridLayout, QInputDialog, QMessageBox, QSizePolicy, QGraphicsBlurEffect
+from PyQt5.QtCore import Qt, QSize, QTime, QDate, pyqtSignal
 from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QIcon, QPixmap
 
 from util.Folder import Folder
+from util.File import File
 
 from style_sheets.folder_style_sheet import style_sheet
 
 class FolderWidget(Folder, QWidget):
 
     FOLDER_TYPES = {"Normal": "N", "Image Folder": "I", "Video Folder": "V", "Document Folder": "D",
-                    "System Folder": "S", "Red": "RED", "Green": "GREEN", "Blue": "BLUE"}
+                    "System Folder": "S", "Code Folder" : "C", "Music Folder" : "M", "User Folder" : "U",
+                    "Red": "RED", "Green": "GREEN", "Blue": "BLUE"}
 
     FOLDER_MENU_ICONS = {
         "Red": "img/sys/red_oval.png",
@@ -18,28 +20,37 @@ class FolderWidget(Folder, QWidget):
         "Blue": "img/sys/blue_oval.png",
         "Orange": "img/sys/orange_oval.png",
         "Yellow": "img/sys/yellow_oval.png",
-        "Image Folder": "img/sys/image_folder.png",
-        "Video Folder": "img/sys/video_folder.png",
-        "Document Folder": "img/sys/doc_folder.png",
-        "Normal Folder": "img/sys/folder (1).png",
-        "System Folder" : "img/sys/system.png"
+        "Image Folder": "img/sys/folder_icons/folder (9).png",
+        "Video Folder": "img/sys/folder_icons/video-folder.png",
+        "Document Folder": "img/sys/folder_icons/file-storage.png",
+        "Normal Folder": "img/sys/folder_icons/yellow_folder.png",
+        "System Folder" : "img/sys/folder_icons/folder (10).png",
+        "Music Folder" : "img/sys/folder_icons/music-folder (1).png",
+        "Code Folder" : "img/sys/folder_icons/folder (4).png",
+        "User Folder" : "img/sys/folder_icons/folder (6).png"
     }
 
     FOLDER_ICONS = {
-        "N" : "img/sys/yellow_folder.png",
-        "I" : "img/sys/image_folder.png",
-        "V" : "img/sys/video_folder.png",
-        "D" : "img/sys/doc_folder.png",
-        "S" : "img/sys/system.png",
-        "RED" : "img/sys/red_folder.png",
-        "GREEN" : "img/sys/green_folder.png",
-        "BLUE" : "img/sys/blue_folder.png",
-        "ORANGE" : "img/sys/orange_folder.png",
-        "YELLOW" : "img/sys/yellow_folder.png"
+        "N" : "img/sys/folder_icons/yellow_folder.png",
+        "I" : "img/sys/folder_icons/folder (9).png",
+        "V" : "img/sys/folder_icons/video-folder.png",
+        "D" : "img/sys/folder_icons/file-storage.png",
+        "S" : "img/sys/folder_icons/folder (10).png",
+        "C" : "img/sys/folder_icons/folder (4).png",
+        "M" : "img/sys/folder_icons/music-folder (1).png",
+        "U" : "img/sys/folder_icons/folder (6).png",
+        "RED" : "img/sys/folder_icons/empty-folder (1).png",
+        "GREEN" : "img/sys/folder_icons/green_folder.png",
+        "BLUE" : "img/sys/folder_icons/blue_folder.png",
+        "ORANGE" : "img/sys/folder_icons/orange_folder.png",
+        "YELLOW" : "img/sys/folder_icons/yellow_folder.png"
     }
 
 
-    ICON_HEIGHT = 90
+    ICON_HEIGHT = 80
+
+    # declare custom signals for folder widget
+    copy_signal = pyqtSignal([Folder, File])
 
     def __init__(self, name, path, time, fav, type = 'N' , pw = None ,parent = None):
         super(FolderWidget, self).__init__(name, path, time, fav, type)
@@ -50,6 +61,7 @@ class FolderWidget(Folder, QWidget):
         # create the folder name text , create date and time and icon
         self.name_label = QLabel(self.name)
         self.name_label.setObjectName("name-label")
+        self.name_label.adjustSize()
 
         self.icon_label = QLabel()
         # self.icon_label.setFixedHeight(self.ICON_HEIGHT)
@@ -88,18 +100,18 @@ class FolderWidget(Folder, QWidget):
         self.favorite_button.pressed.connect(self.changeFav)
 
         if self.fav:
-            self.favorite_button.setIcon(QIcon("img/sys/star.png"))
+            self.favorite_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.favorite_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.favorite_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
     def changeFav(self):
 
         self.fav = not self.fav
         self.parent.file_engine.db_manager.change_favorite_folder(self.path ,self.fav)
         if self.fav:
-            self.favorite_button.setIcon(QIcon("img/sys/star.png"))
+            self.favorite_button.setIcon(QIcon("img/sys/heart-free-icon-font (1).png"))
         else:
-            self.favorite_button.setIcon(QIcon("img/sys/star (1).png"))
+            self.favorite_button.setIcon(QIcon("img/sys/heart-free-icon-font.png"))
 
 
     def changeView(self, index):
@@ -115,14 +127,15 @@ class FolderWidget(Folder, QWidget):
             self.grid.addWidget(self.name_label, 0, 1, alignment=Qt.AlignLeft)
             self.grid.addWidget(self.time_label, 0, 2)
 
+            # self.setMaximumHeight(300)
             self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum))
             self.setMaximumWidth(2000)
 
         elif index == 1:
             self.name_label.setWordWrap(True)
             self.grid.addWidget(self.favorite_button, 0, 0, alignment=Qt.AlignLeft)
-            self.grid.addWidget(self.icon_label, 1, 0)
-            self.grid.addWidget(self.name_label, 2, 0)
+            self.grid.addWidget(self.icon_label, 1, 0, alignment=Qt.AlignCenter)
+            self.grid.addWidget(self.name_label, 2, 0, alignment=Qt.AlignHCenter)
             # adjust th size of the  widget
             # self.setFixedWidth(230)
             self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
@@ -164,10 +177,16 @@ class FolderWidget(Folder, QWidget):
         folderMenu.addSeparator()
 
         copy_action = QAction(QIcon("img/sys/copy.png"), "Copy", self)
+        copy_action.triggered.connect(lambda e, x = True : self.copyFolder(x))
         folderMenu.addAction(copy_action)
 
         move_action = QAction(QIcon("img/sys/forward.png"), "Move", self)
+        move_action.triggered.connect(lambda e , x = False : self.copyFolder(x))
         folderMenu.addAction(move_action)
+
+        paste_action = QAction(QIcon("img/sys/file.png"), "Paste", self)
+        paste_action.triggered.connect(self.pasteItem)
+        folderMenu.addAction(paste_action)
 
         folderMenu.addSeparator()
 
@@ -186,7 +205,6 @@ class FolderWidget(Folder, QWidget):
 
         self.parent.selected(self)
         event.accept()
-
 
     def mouseDoubleClickEvent(self,event : QMouseEvent) -> None:
 
@@ -263,6 +281,9 @@ class FolderWidget(Folder, QWidget):
 
         self.icon_label.setPixmap(QPixmap(self.FOLDER_ICONS.get(type, "img/sys/folder (3).png"))
                                   .scaledToHeight(self.ICON_HEIGHT))
+        self.icon_label.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum))
+        # adjust the image label size
+        self.icon_label.adjustSize()
 
     def changeColor(self, type : str):
 
@@ -272,6 +293,23 @@ class FolderWidget(Folder, QWidget):
         self.parent.db_manager.change_folder_color(self.path, code)
         # change the current folder icon
         self.setFolderIcon(code)
+
+    def copyFolder(self, copy_flag : bool):
+        # copied the item to global clipboard instance
+        self.parent.clipboard.copyItem(Folder(self.name, self.path, self.time, self.fav, self.type), copy_flag)
+
+        if not copy_flag:
+            blurEffect = QGraphicsBlurEffect()
+            self.icon_label.setGraphicsEffect(blurEffect)
+
+
+    def pasteItem(self):
+        # access the parent clipboard item
+        state = self.parent.clipboard.paste(self.path)
+        if not state:
+            QMessageBox.warning(self, "Paste items warning", "Error occured in paste mechnism!",
+                                QMessageBox.StandardButton.Ok)
+
 
 
 if __name__ == "__main__":
