@@ -10,7 +10,7 @@ style_sheet = """
                 font-weight : 300}
                 
             QPushButton {
-                    background-color : rgb(240, 70, 6);
+                    background-color : #FF5A00;
                     color : black;
                     font-size : 25px;
                     padding : 7px 8px;
@@ -18,7 +18,7 @@ style_sheet = """
                     border-radius : 6px;}
                     
             QPushButton:hover {
-                    background-color :rgb(255, 100, 20);
+                    background-color :#EA854E;
                     border-radius : 7px;}
                     
             QLabel {
@@ -253,7 +253,9 @@ style_sheet = """
                         
             QLineEdit:focus {border-radius : 8px;
                     border : none;
-                    border-left : 3px solid rgb(240, 50 , 5)}            
+                    border-left : 3px solid rgb(240, 50 , 5);
+                    border-radius : 0px;
+                    }            
                     
             
             

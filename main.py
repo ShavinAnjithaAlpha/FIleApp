@@ -7,6 +7,7 @@ from widgets.file_area import FileArea
 from widgets.status_widget_factory import WidgetFactory
 from widgets.favorite_panel import FavoritePanel
 from widgets.folder_tree_widget import FolderTreeWidget
+from widgets.about_dialog import AboutDialog
 
 from apps.photo_viewer import PhotoViewer
 from apps.video_player import VideoPlayer
@@ -32,7 +33,8 @@ class FileApp(QMainWindow):
         self.db_manager = db_manager() # initialize the db manager instance globally for handle database side
         self.clipboard = ClipBoard(self.db_manager) # initialize clipboard instance for store copied items globally
 
-        self.setWindowTitle("Files Manager")
+        self.setWindowTitle("File App ~beta version 1.0")
+        self.setWindowIcon(QIcon("img/sys/FileAppIcon.png"))
         self.resize(self.full_size) # resize the window to the size of desktop
         # set up the toolbar
         self.setUpToolBar()
@@ -120,6 +122,10 @@ class FileApp(QMainWindow):
                                 self.openRecycleBin)
         self.tool_bar.addAction(QIcon("img/sys/heart-free-icon-font (1).png"), "Favorites",
                                 self.openFavorites)
+        self.tool_bar.addAction(QIcon("img/sys/info-free-icon-font.png"), "About",
+                                self.openAbout)
+        self.tool_bar.addAction(QIcon("img/sys/off.png"), "Exit",
+                                lambda : QApplication.exit(0))
 
 
 
@@ -315,6 +321,11 @@ class FileApp(QMainWindow):
         path = self.tree.model.item(index.row(), 0).item[1]
         if self.current_file_area:
             self.current_file_area.openFolder(path)
+
+    def openAbout(self):
+
+        aboutDialog = AboutDialog()
+        aboutDialog.exec_()
 
 if __name__ == "__main__":
     app = QApplication([])
