@@ -3,6 +3,9 @@
 <p>File App is a basic implementation of a file manager app in customize way. In this app, you can organize your files and folders in your way rather than your disk file system arrangement. The fascinating thing is that this app can create virtual folders and add files to these virtual folders. Also, this app is customized to mark folders in different colors for your clarity and you can select a different kind of folder types such as Image Folder, Video Folder, Audio Folder, Document Folder, System Folder, etc... 
 The app consists most basic features that will found in any file manager app such as status panel, searching file folders, sorting items, copy paste mechnism, favorite panel and more. App was extended to add lock to folder and file, recycle bin panel. I will try to add more more specific features to improve functionalities of app and make as a specific file manager app implementation.</p>
 
+Structure of Software
+![File App Software Diagram](https://user-images.githubusercontent.com/85817726/175543052-df61b8e7-c115-478e-b514-a38b5ecd76e9.png)
+
 Here some ScreenShots of the FileApp.
 ![Annotation 2022-06-19 215251](https://user-images.githubusercontent.com/85817726/174491038-211fe6de-9ec4-45ee-a0a9-f000715bb9be.png)
 ![Annotation 2022-06-19 214139](https://user-images.githubusercontent.com/85817726/174491044-9929db1a-5903-4cc3-b910-b25be6bc35b2.png)
