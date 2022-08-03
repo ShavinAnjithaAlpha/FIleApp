@@ -1,0 +1,11 @@
+# UNWANTED FOLDERS
+.idea/
+__pycache__/
+
+# LOG FILES
+*.log
+
+# PYTHON CACHED FILES
+*.pyc
+*.cpython-39.pyc
+*.cpython-38.pyc
