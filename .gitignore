@@ -12,3 +12,7 @@ venv/
 *.pyc
 *.cpython-39.pyc
 *.cpython-38.pyc
+
+# database files
+db/
+*.db
